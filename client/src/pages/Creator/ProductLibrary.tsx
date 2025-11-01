@@ -155,7 +155,7 @@ function ProductLibrary() {
           {wideBanners.map((brand) => (
             <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
               <div className={styles.bannerContent}>
-                <h4 className={styles.bannerTitle}>{brand.brand_name} Featured Collection</h4>
+                <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
                 <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count} </p>
               </div>
             </Link>
