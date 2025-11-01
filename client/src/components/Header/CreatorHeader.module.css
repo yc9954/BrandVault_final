@@ -1,0 +1,63 @@
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0.5rem; /* 버튼 패딩과 맞춤 */
+  margin-bottom: 2.5rem;
+}
+
+.logoWrapper img {
+  height: 32px;
+}
+
+.logoWrapper span {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.headerNavList {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* 버튼 사이 간격 */
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000; /* 비활성 상태 글자색 */
+  transition: all 0.2s ease;
+}
+
+.navButton:hover {
+  background-color: #2a2a2a;
+  color: #FFFFFF;
+}
+
+/* 활성 상태 스타일 */
+.navButton.active {
+  background-color: #9F54FF; /* 이미지의 보라색 */
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.2);
+}
+
+.navIcon {
+  margin-right: 12px;
+  /* 아이콘과 텍스트의 세로 정렬을 맞추기 위함 */
+  display: flex;
+  align-items: center;
+}

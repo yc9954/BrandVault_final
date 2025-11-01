@@ -7,6 +7,7 @@ import productRoutes from './routes/productRoutes.js';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import fileRoutes from './routes/fileRoutese.js'
 import splatRoutes from './routes/splatRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -33,6 +34,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/splat", splatRoutes);
+
+app.use("/api/file", fileRoutes)
 
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);

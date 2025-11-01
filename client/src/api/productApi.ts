@@ -9,6 +9,9 @@ export interface Product {
   color: string | null;
   size: string;
 
+  image_url: string | null; 
+  signedImageUrl: string | null; 
+
   brand: {
     brand_id: number;
     brand_name: string;
@@ -21,35 +24,15 @@ export interface Product {
  * @returns Product 배열 Promise
  */
 export const fetchAllProducts = async (): Promise<Product[]> => {
-  // Vercel 배포 시에는 같은 도메인을 사용하므로 상대 경로 사용
-  // 로컬 개발 시에는 REACT_APP_API_URL이 설정되어 있으면 사용, 없으면 localhost 사용
-  const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
-  
-  try {
-    console.log('API 호출:', `${API_URL}/api/products`);
-    const response = await fetch(`${API_URL}/api/products`, {
-      credentials: 'include', // 쿠키 전송
-      mode: 'cors', // CORS 모드 명시
-    });
-    
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Response error:', errorText);
-      throw new Error(`서버 오류 (${response.status}): ${errorText || '서버에서 제품 목록을 불러오는 데 실패했습니다.'}`);
-    }
-    
-    const data: Product[] = await response.json();
-    console.log('Products loaded:', data.length);
-    return data;
-  } catch (error: any) {
-    console.error('Fetch error:', error);
-    // 네트워크 오류나 CORS 오류의 경우 더 명확한 메시지
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인하세요. (http://localhost:3000)');
-    }
-    throw error;
-  }
-};
+  // 이 함수 자체는 수정할 필요가 없습니다.
+  // API 서버(/api/products)가 위에서 정의한 Product 타입에 맞게
+  // signedImageUrl을 잘 만들어서 보내주기만 하면 됩니다.
 
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products`);
+  
+  if (!response.ok) {
+    throw new Error('서버에서 제품 목록을 불러오는 데 실패했습니다.');
+  }
+  const data: Product[] = await response.json();
+  return data;
+};

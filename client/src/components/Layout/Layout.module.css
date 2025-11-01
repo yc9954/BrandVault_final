@@ -1,0 +1,23 @@
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  width: 260px; /* 사이드바 고정 너비 */
+  height: 100%;
+  background-color: #fff; /* 사이드바 배경색 (다크 모드) */
+  padding: 1.5rem;
+  border-right: 1px solid #2a2a2a;
+}
+
+.mainContent {
+  flex: 1; /* 나머지 공간 모두 차지 */
+  height: 100%;
+  overflow-y: auto; /* 콘텐츠가 길어지면 여기서만 스크롤 */
+  
+  /* --- 👇 바로 이 여백입니다 --- */
+  /* 위/아래 2.5rem, 좌/우 3rem의 안쪽 여백 */
+  padding: 2.5rem 3rem; 
+}

@@ -1,107 +1,105 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import styles from './ProductLibrary.module.css';
 import { fetchAllProducts, Product } from '../../api/productApi';
 import SplatUploader from '../../components/SplatUploader/SplatUploader';
 import SplatViewer from '../../components/SplatViewer/SplatViewer';
 import './ProductLibrary.css';
 
 function ProductLibrary() {
-  // 2. State 변수 선언: [데이터, 로딩상태, 에러]
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+
+    const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [showViewer, setShowViewer] = useState(false);
   const [activeTab, setActiveTab] = useState<'products' | 'splat'>('products');
 
   useEffect(() => {
     fetchAllProducts()
-      .then(data => {
-        setProducts(data);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .then(data => { setProducts(data); })
+      .catch((err: Error) => { setError(err.message); })
+      .finally(() => { setIsLoading(false); });
   }, []);
 
-  const handleUploadComplete = (jobId: string) => {
-    setCurrentJobId(jobId);
-    setActiveTab('splat');
-    // 변환이 완료되면 자동으로 뷰어 표시
-    setTimeout(() => {
-      setShowViewer(true);
-    }, 2000); // 2초 후 확인
-  };
-
-  const handleCloseViewer = () => {
-    setShowViewer(false);
-    setCurrentJobId(null);
-  };
-
+  if (isLoading) { return <div>데이터를 불러오는 중입니다... ⏳</div>; }
+  if (error) { return <div>에러가 발생했습니다: {error} ❌</div>; }
+  
   return (
-    <div className="product-library">
-      <div className="library-tabs">
-        <button
-          className={activeTab === 'products' ? 'active' : ''}
-          onClick={() => setActiveTab('products')}
-        >
-          제품 라이브러리
+    <div>
+      {/* 헤더 섹션 */}
+      <header className={styles.header}>
+        <div>
+          <h2 className={styles.title}>Product Library</h2>
+          <p className={styles.subtitle}>Browse and favorite products for your next video project</p>
+        </div>
+        <button className={styles.createButton}>
+          <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
+            <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
+          </svg>
+          Create New Project
         </button>
-        <button
-          className={activeTab === 'splat' ? 'active' : ''}
-          onClick={() => setActiveTab('splat')}
-        >
-          Gaussian Splatting
-        </button>
+      </header>
+
+      {/* 필터/검색 섹션 */}
+      <div className={styles.filterBar}>
+        <div className={styles.searchBox}>
+          <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="#777">
+            <path d="M39.8 41.95 26.6 28.75q-1.5 1.3-3.5 2.025-2 .725-4.25 .725-5.4 0-9.15-3.75T6 18.6q0-5.3 3.75-9.05T18.85 5.8q5.3 0 9.05 3.75t3.75 9.05q0 2.25-.725 4.25-.725 2-2.025 3.5l13.2 13.2ZM19 30q4.6 0 7.8-3.2t3.2-7.8q0-4.6-3.2-7.8T19 8q-4.6 0-7.8 3.2T8 19q0 4.6 3.2 7.8T19 30Z"/>
+          </svg>
+          <input type="text" placeholder="Search products..." />
+        </div>
+        <select className={styles.dropdown}>
+          <option>All Categories</option>
+        </select>
+        <select className={styles.dropdown}>
+          <option>Newest</option>
+        </select>
       </div>
 
-      {activeTab === 'products' && (
-        <div className="products-section">
-          <h2>프로덕트 라이브러리</h2>
-          {isLoading ? (
-            <div>데이터를 불러오는 중입니다... ⏳</div>
-          ) : error ? (
-            <div>에러가 발생했습니다: {error} ❌</div>
-          ) : products.length === 0 ? (
-            <p>등록된 제품이 없습니다.</p>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {products.map((product) => (
-                <li key={product.product_id} style={{ border: '1px solid #ccc', margin: '10px', padding: '10px' }}>
-                  <h3>{product.product_name}</h3>
-                  <p>브랜드: {product.brand.brand_name}</p>
-                  <p>카테고리: {product.category}</p>
-                  {product.color && <p>색상: {product.color}</p>}
-                  {product.size && <p>사이즈: {product.size}</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {/* 제품 그리드 */}
+      {products.length === 0 ? (
+        <p>등록된 제품이 없습니다.</p>
+      ) : (
+        <ul className={styles.productGrid}>
+          {products.map((product) => (
+            <li key={product.product_id} className={styles.productCard}>
+              {/* <Link 
+                to={`/product/${product.product_id}`} 
+                className={styles.cardLink}
+              > */}
+             
+                <div className={styles.cardImagePlaceholder}>
+                  {product.signedImageUrl ? (
+                    <img 
+                      src={product.signedImageUrl} 
+                      alt={product.product_name} 
+                      className={styles.cardImage}
+                    />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" height={40} width={40} viewBox="0 0 48 48" fill="currentColor">
+                      <path d="M6 42V6h36v36Zm3-3h30V9H9Zm0 0V9v30Zm4.2-4.1h21.6l-6.6-8.8-5.7 7.6-3.9-5.2Z"/>
+                    </svg>
+                  )}
+                  <button className={styles.bookmarkButton}>
+                    <svg xmlns="http://www.w3.org/2000/svg" height={18} width={18} viewBox="0 0 48 48" fill="currentColor">
+                      <path d="m11.65 44 3.25-14.05L4 20.5l14.4-1.25L24 6l5.6 13.25L44 20.5l-10.9 9.45L36.35 44 24 36.55Zm-3.1-4.4 2.25-9.8-7.55-6.55 10.1-.9L24 13.1l4 9.25 10.1.9-7.55 6.55 2.25 9.8L24 35.15Z"/>
+                    </svg>
+                  </button>
+                </div>
 
-      {activeTab === 'splat' && (
-        <div className="splat-section">
-          <div className="splat-upload-section">
-            <SplatUploader onUploadComplete={handleUploadComplete} />
-          </div>
-          
-          {currentJobId && showViewer && (
-            <div className="splat-viewer-section">
-              <SplatViewer jobId={currentJobId} onClose={handleCloseViewer} />
-            </div>
-          )}
-          
-          {currentJobId && !showViewer && (
-            <div className="viewer-toggle">
-              <button onClick={() => setShowViewer(true)} className="view-btn">
-                뷰어 열기
-              </button>
-            </div>
-          )}
-        </div>
+                <div className={styles.cardContent}>
+                  <h3>{product.product_name}</h3>
+                  <p className={styles.cardSponsor}>Sponsored by {product.brand.brand_name}</p>
+                  <div className={styles.cardTags}>
+                    <span className={styles.tag}>{product.category}</span>
+                    <span className={styles.tag}>$30-50/1K views</span>
+                  </div>
+                </div>
+              {/* </Link> */}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

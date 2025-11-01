@@ -23,3 +23,4 @@ export const loginBrand = async (): Promise<string> => {
     const token = jwt.sign(payload, secret, {expiresIn: '1h'});
     return token;
 }
+

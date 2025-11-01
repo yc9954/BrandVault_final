@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,8 +12,8 @@ model Admin {
   admin_name String
   role       String
   department String
-  requests   Asset_Request[]
   reports    Analytics_Report[]
+  requests   Asset_Request[]
 }
 
 model Analytics_Report {
@@ -52,14 +46,15 @@ model Brand {
   contract_email   String                 @unique
   industry         String?
   status           String
-  platform_users   Platform_User[]
-  subscriptions    Subscription[]
-  products         Product[]
-  library_accesses Brand_Library_Access[]
-  asset_requests   Asset_Request[]
-  report_purchases Report_purchase[]
-  inquiries        Inquiry[]
+  logo_url         String?
   ad_contracts     AD_Contract[]
+  asset_requests   Asset_Request[]
+  library_accesses Brand_Library_Access[]
+  inquiries        Inquiry[]
+  platform_users   Platform_User[]
+  products         Product[]
+  report_purchases Report_purchase[]
+  subscriptions    Subscription[]
 }
 
 model Platform_User {
@@ -76,8 +71,8 @@ model Subscription_Plan {
   plan_id       Int            @id @default(autoincrement())
   plan_name     String
   price         Float
-  billing_cycle  String
   asset_Limit   Int
+  billing_cycle String
   subscriptions Subscription[]
 }
 
@@ -85,10 +80,10 @@ model Subscription {
   subscription_id Int               @id @default(autoincrement())
   plan_id         Int
   brand_id        Int
-  start_date      DateTime
   end_date        DateTime
-  plan            Subscription_Plan @relation(fields: [plan_id], references: [plan_id])
+  start_date      DateTime
   brand           Brand             @relation(fields: [brand_id], references: [brand_id])
+  plan            Subscription_Plan @relation(fields: [plan_id], references: [plan_id])
 }
 
 model BrandVault_Library {
@@ -116,11 +111,11 @@ model Master_Asset {
   asset_code      String
   file_path       String
   access_level    String
-  library         BrandVault_Library     @relation(fields: [library_id], references: [library_id])
-  versions        Master_Asset_version[]
-  history         Master_Asset_History[]
-  usage_logs      Data_Usage_Log[]
   asset_requests  Asset_Request[]
+  usage_logs      Data_Usage_Log[]
+  library         BrandVault_Library     @relation(fields: [library_id], references: [library_id])
+  history         Master_Asset_History[]
+  versions        Master_Asset_version[]
 }
 
 model Master_Asset_version {
@@ -128,8 +123,8 @@ model Master_Asset_version {
   master_asset_id         Int
   version_number          String
   file_path               String
-  created_at              DateTime        @default(now())
   asset_type              String
+  created_at              DateTime        @default(now())
   master_asset            Master_Asset    @relation(fields: [master_asset_id], references: [master_asset_id])
   product_assets          Product_Asset[]
 }
@@ -153,9 +148,9 @@ model Asset_Request {
   request_type    String
   status          String
   request_date    DateTime     @default(now())
+  admin           Admin        @relation(fields: [admin_id], references: [admin_id])
   brand           Brand        @relation(fields: [brand_id], references: [brand_id])
   master_asset    Master_Asset @relation(fields: [master_asset_id], references: [master_asset_id])
-  admin           Admin        @relation(fields: [admin_id], references: [admin_id])
 }
 
 model Product {
@@ -163,34 +158,44 @@ model Product {
   brand_id       Int
   product_name   String
   category       String
-  color          String?
   size           String
+  color          String?
+  image_url      String?
+  ad_contracts   AD_Contract[]
+  inquiries      Inquiry[]
+  view_count     Int                @default(0)  // 조회순 (새로운 필드)
+  download_count Int                @default(0)  // 인기순 (새로운 필드)
+  created_at     DateTime           @default(now()) // 최신순
+  updated_at     DateTime?
+
   brand          Brand              @relation(fields: [brand_id], references: [brand_id])
   product_assets Product_Asset[]
-  inquiries      Inquiry[]
-  ad_contracts   AD_Contract[]
   purchased_by   Product_Purchase[]
   projects       Project[]          @relation("ProjectProducts")
+
+  @@index([view_count, product_id])     // 조회순 정렬용
+  @@index([download_count, product_id]) // 인기순 정렬용
+  @@index([created_at, product_id])     // 최신순 정렬용
 }
 
 model Product_Asset {
   product_id              Int
   master_asset_version_id Int
-  product                 Product              @relation(fields: [product_id], references: [product_id])
   master_asset_version    Master_Asset_version @relation(fields: [master_asset_version_id], references: [master_asset_version_id])
+  product                 Product              @relation(fields: [product_id], references: [product_id])
 
   @@id([product_id, master_asset_version_id])
 }
 
 model Content_Partner {
   partner_id       Int              @id @default(autoincrement())
-  partner_name     String
   partner_type     String
   is_authenticated Boolean
   status           String
-  inquiries        Inquiry[]
+  partner_name     String
   ad_contracts     AD_Contract[]
   data_usage_logs  Data_Usage_Log[]
+  inquiries        Inquiry[]
 }
 
 model Message {
@@ -209,21 +214,21 @@ model Inquiry {
   brand_id     Int
   product_id   Int
   inquiry_type String
-  partner      Content_Partner @relation(fields: [partner_id], references: [partner_id])
   brand        Brand           @relation(fields: [brand_id], references: [brand_id])
+  partner      Content_Partner @relation(fields: [partner_id], references: [partner_id])
   product      Product         @relation(fields: [product_id], references: [product_id])
 }
 
 model AD_Contract {
-  contract_id   Int             @id @default(autoincrement())
-  brand_id      Int
-  partner_id    Int
-  product_id    Int
+  contract_id    Int             @id @default(autoincrement())
+  brand_id       Int
+  partner_id     Int
+  product_id     Int
+  contract_at    DateTime        @default(now())
   contact_amount String
-  contract_at   DateTime        @default(now())
-  brand         Brand           @relation(fields: [brand_id], references: [brand_id])
-  partner       Content_Partner @relation(fields: [partner_id], references: [partner_id])
-  product       Product         @relation(fields: [product_id], references: [product_id])
+  brand          Brand           @relation(fields: [brand_id], references: [brand_id])
+  partner        Content_Partner @relation(fields: [partner_id], references: [partner_id])
+  product        Product         @relation(fields: [product_id], references: [product_id])
 }
 
 model Data_Usage_Log {
@@ -252,6 +257,7 @@ model Project {
   description   String?
   created_at    DateTime  @default(now())
   creator_id    Int
+  thumbnail_url String?
   creator       Creator   @relation(fields: [creator_id], references: [creator_id])
   products_used Product[] @relation("ProjectProducts")
 }
@@ -260,8 +266,8 @@ model Product_Purchase {
   purchase_id Int      @id @default(autoincrement())
   purchase_at DateTime @default(now())
   creator_id  Int
-  creator     Creator  @relation(fields: [creator_id], references: [creator_id])
   product_id  Int
+  creator     Creator  @relation(fields: [creator_id], references: [creator_id])
   product     Product  @relation(fields: [product_id], references: [product_id])
 
   @@unique([creator_id, product_id])
