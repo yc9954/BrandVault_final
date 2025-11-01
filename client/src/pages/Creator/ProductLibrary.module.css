@@ -1,30 +1,59 @@
+/*
+ * ProductLibrary.module.css
+ * 라이트 모드 (White/Light Background, Dark Text) 기준
+ */
+/* --- 전역 스타일 및 컨테이너 --- */
+.container {
+  margin: 0;
+  background-color: white; /* 배경색 설정 */
+  color: #1a1a1a; /* 기본 텍스트 색상 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.error {
+  text-align: center;
+  color: #ff3860;
+  font-size: 1.25rem;
+  padding: 3rem;
+  background-color: #fff0f0;
+  border-radius: 12px;
+  border: 1px solid #ff3860;
+  margin: 2rem 0;
+}
+
+/* --- 1행: 헤더 섹션 (기존 스타일 유지 및 라이트 모드 색상 조정) --- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
 }
+
 .header > div {
   text-align: left;
 }
+
 .title {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
+  color: #1a1a1a; /* 라이트 모드 텍스트 */
 }
 
 .subtitle {
   margin: 0.25rem 0 0 0;
   font-size: 1rem;
-  color: #a0a0a0;
+  color: #7a7a7a; /* 밝은 회색으로 조정 */
 }
 
 .createButton {
-  background-color: #9F54FF;
+  background-color: #9F54FF; /* 보라색 강조 */
   color: white;
   font-size: 1rem;
   font-weight: 600;
   padding: 12px 20px;
+  border: none;
+  cursor: pointer;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -37,7 +66,76 @@
   box-shadow: 0 4px 12px rgba(159, 84, 255, 0.3);
 }
 
-/* 필터/검색 바 */
+/* --- 2행: 와이드 배너 섹션 --- */
+
+.horizontalScrollContainer {
+  display: flex;
+  overflow-x: auto; /* 가로 스크롤 허용 */
+  padding-bottom: 1rem; /* 스크롤 바를 위해 공간 확보 */
+  gap: 1rem;
+  /* 스크롤바 숨기기 (선택 사항) */
+  /* -ms-overflow-style: none; /* IE and Edge */
+  /* scrollbar-width: none; /* Firefox */
+}
+/* .horizontalScrollContainer::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera */
+
+.wideBannerScroll {
+  margin-bottom: 3rem;
+}
+
+.wideBannerLoading {
+  height: 200px;
+  background-color: #e9e9e9;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+}
+
+.wideBannerItem {
+  flex-shrink: 0; /* 크기 축소 방지 */
+  width: 400px; /* 고정 너비 설정 */
+  height: 200px;
+  border-radius: 12px;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: flex-end; /* 내용을 아래쪽에 배치 */
+  transition: transform 0.2s ease;
+}
+
+.wideBannerItem:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.bannerContent {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0)); /* 하단 그라데이션 오버레이 */
+}
+
+.bannerTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.bannerSubtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+}
+
+/* --- 필터/검색 바 (기존 스타일 유지) --- */
 .filterBar {
   display: flex;
   gap: 1rem;
@@ -48,88 +146,139 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background-color: #fefefe;
-  border: 1px solid #333;
+  background-color: #fff; /* 라이트 모드 배경 */
+  border: 1px solid #d0d0d0; /* 밝은 테두리 */
   border-radius: 8px;
   padding: 0 12px;
+  color: #777; /* 아이콘 색상 */
 }
 
 .searchBox input {
   flex: 1;
   background: none;
   border: none;
-  color: black;
+  color: #1a1a1a; /* 텍스트 색상 */
   padding: 12px 8px;
   font-size: 1rem;
   outline: none;
 }
 
-/* (임시) 드롭다운 스타일 */
 .dropdown {
   background-color: #fff;
-  border: 1px solid #333;
-  color: #000;
+  border: 1px solid #d0d0d0;
+  color: #1a1a1a;
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 1rem;
+  cursor: pointer;
 }
 
-/* 제품 카드 그리드 */
+/* --- 4행: 추천 브랜드 목록 섹션 --- */
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.loading {
+  text-align: center;
+  color: #7a7a7a;
+  padding: 1rem 0;
+}
+
+.brandCard {
+  flex-shrink: 0;
+  width: 180px;
+  height: 180px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.brandLogoPlaceholder {
+  width: 80px;
+  height: 80px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  border: 2px solid #fff;
+}
+
+.brandAssetCount {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 0;
+  background-color: rgba(255, 255, 255, 0.7); /* 배경 위에 텍스트가 잘 보이도록 */
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* --- 5행: 추천 에셋 목록 (기존 스타일 유지 및 라이트 모드 색상 조정) --- */
+.noProducts {
+  text-align: center;
+  color: #7a7a7a;
+  padding: 3rem;
+  font-size: 1.1rem;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
 .productGrid {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  /* 280px 크기를 기준으로 반응형 그리드 생성 */
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
-/* 제품 카드 */
 .productCard {
   background-color: #fff;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e0e0e0; /* 밝은 테두리 */
   border-radius: 12px;
-  overflow: hidden; /* 이미지 모서리를 둥글게 */
+  overflow: hidden;
   transition: all 0.2s ease;
 }
 
 .productCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* 더 밝은 그림자 */
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
 }
 
 .cardImagePlaceholder {
   height: 200px;
-  background-color: #333;
+  background-color: #f0f0f0; /* 밝은 배경 */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: #a0a0a0; /* 회색 아이콘 */
   position: relative;
 }
-/* 제품 이미지 스타일 */
+
 .cardImage {
-  /* 1. 부모 요소의 크기에 100% 맞춥니다. */
   width: 100%;
   height: 100%;
   object-fit: cover; 
-}
-
-/* (임시) 즐겨찾기 버튼 */
-.bookmarkButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .cardContent {
@@ -139,15 +288,15 @@
 .cardContent h3 {
   margin: 0 0 0.25rem 0;
   font-size: 1.25rem;
+  color: #1a1a1a;
 }
 
 .cardSponsor {
   font-size: 0.875rem;
-  color: #a0a0a0;
+  color: #7a7a7a;
   margin: 0 0 1rem 0;
 }
 
-/* 태그 */
 .cardTags {
   display: flex;
   flex-wrap: wrap;
@@ -155,10 +304,57 @@
 }
 
 .tag {
-  background-color: #333;
-  color: #ccc;
+  background-color: #f0f0f0; /* 밝은 배경 태그 */
+  color: #555;
   font-size: 0.75rem;
   font-weight: 500;
   padding: 4px 8px;
   border-radius: 6px;
+}
+
+.tagPrice {
+  background-color: #9F54FF; /* 가격 태그 강조 */
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* --- 무한 스크롤 상태 인디케이터 --- */
+.loadingMore,
+.endOfList {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #7a7a7a;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+/* --- 미디어 쿼리 (반응형) --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filterBar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .wideBannerItem {
+    width: 90vw; /* 모바일에서 가로 꽉 채우기 */
+    height: 150px;
+  }
 }

@@ -1,23 +1,44 @@
+/* Layout.module.css (최종 수정) */
+
 .layoutContainer {
-  display: flex;
+  /* flex를 사용하지 않습니다. */
   height: 100vh;
   width: 100vw;
+  
+  /* 브라우저 기본 마진 제거 */
+  margin: 0;
+  
+  /* (중요) 자식 요소의 box-sizing 기준 */
+  box-sizing: border-box; 
 }
 
 .sidebar {
-  width: 260px; /* 사이드바 고정 너비 */
-  height: 100%;
-  background-color: #fff; /* 사이드바 배경색 (다크 모드) */
-  padding: 1.5rem;
+  width: 260px;
+  position: fixed; /* 뷰포트에 고정 */
+  top: 0;
+  left: 0;
+  height: 100vh; /* 뷰포트 전체 높이 */
+  
+  background-color: #fff;
   border-right: 1px solid #2a2a2a;
+  z-index: 10;
+
+  /* (중요) 패딩이 너비(260px) 안쪽으로 계산되도록 함 */
+  box-sizing: border-box; 
+  padding: 1.5rem;
 }
 
 .mainContent {
-  flex: 1; /* 나머지 공간 모두 차지 */
-  height: 100%;
-  overflow-y: auto; /* 콘텐츠가 길어지면 여기서만 스크롤 */
+  /* (중요) 사이드바 너비(260px)만큼 왼쪽 마진을 줍니다. */
+  margin-left: 260px; 
   
-  /* --- 👇 바로 이 여백입니다 --- */
-  /* 위/아래 2.5rem, 좌/우 3rem의 안쪽 여백 */
+  /* (중요) 스크롤은 이 메인 영역에서만 발생해야 함 */
+  height: 100vh;
+  overflow-y: auto;
+
+  /* (중요) 패딩이 높이(100vh) 안쪽으로 계산되도록 함 */
+  box-sizing: border-box; 
+  
+  /* 이 패딩이 사이드바와 콘텐츠 사이의 시각적 여백을 만듭니다. */
   padding: 2.5rem 3rem; 
 }

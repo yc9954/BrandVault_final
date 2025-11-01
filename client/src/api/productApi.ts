@@ -1,38 +1,81 @@
-// 1. (필수) 데이터 타입을 정의합니다.
-// 이 타입은 컴포넌트에서도 재사용할 수 있도록 export 합니다.
+type Product = any; // 실제 Prisma Product 타입 가정
+type Brand = any;   // 실제 Prisma Brand 타입 가정
 
-export interface Product {
-  product_id: number;
-  product_name: string;
-  category: string;
-  brand_id: number;
-  color: string | null;
-  size: string;
+type ProductWithUrl = Product & { signedImageUrl: string | null };
+type BrandWithUrl = Brand & { signedLogoUrl: string | null };
 
-  image_url: string | null; 
-  signedImageUrl: string | null; 
+interface ProductApiResponse {
+    data: ProductWithUrl[];
+    meta: {
+        hasMore: boolean;
+        nextCursorId: number | null;
+        nextCursorValue: string | number | null;
+    };
+}
 
-  brand: {
-    brand_id: number;
-    brand_name: string;
-  };
-
+interface BrandApiResponse {
+    data: BrandWithUrl[];
+    meta: {
+        count: number;
+    };
 }
 
 /**
- * 모든 제품 목록을 서버에서 가져옵니다.
- * @returns Product 배열 Promise
+// ----------------------------------------------------
+// 1. fetchProductsByPage 구현 (커서 기반 무한 스크롤)
+// ----------------------------------------------------
+/**
+ * 에셋 목록을 커서 기반으로 페이지네이션하여 가져옵니다.
+ * @param limit 한 페이지당 개수
+ * @param sortBy 정렬 기준 (NEWEST, POPULAR 등)
+ * @param cursorId 마지막 아이템의 ID
+ * @param cursorValue 마지막 아이템의 정렬 값
+ * @returns ProductApiResponse
  */
-export const fetchAllProducts = async (): Promise<Product[]> => {
-  // 이 함수 자체는 수정할 필요가 없습니다.
-  // API 서버(/api/products)가 위에서 정의한 Product 타입에 맞게
-  // signedImageUrl을 잘 만들어서 보내주기만 하면 됩니다.
+export const fetchProductsByPage = async (
+    limit: number, 
+    sortBy: string, 
+    cursorId: number | null, 
+    cursorValue: string | number | null
+): Promise<ProductApiResponse> => {
+    
+    // 쿼리 문자열 생성
+    const params = new URLSearchParams({
+        limit: String(limit),
+        sortBy: sortBy,
+    });
 
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products`);
-  
-  if (!response.ok) {
-    throw new Error('서버에서 제품 목록을 불러오는 데 실패했습니다.');
-  }
-  const data: Product[] = await response.json();
-  return data;
+    if (cursorId !== null && cursorId !== undefined) {
+        params.append('cursorId', String(cursorId));
+    }
+    if (cursorValue !== null && cursorValue !== undefined) {
+        params.append('cursorValue', String(cursorValue));
+    }
+    
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products?${params.toString()}`);
+    
+    if (!response.ok) {
+        throw new Error('Failed to fetch product list from API.');
+    }
+    
+    return response.json();
+};
+
+
+// ----------------------------------------------------
+// 2. fetchFeatureBrandList 구현 (상위 브랜드 목록)
+// ----------------------------------------------------
+/**
+ * 추천 브랜드 목록을 가져옵니다.
+ * @returns BrandApiResponse
+ */
+export const fetchFeatureBrandList = async (): Promise<BrandApiResponse> => {
+    
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/brands/featured`);
+    
+    if (!response.ok) {
+        throw new Error('Failed to fetch featured brand list from API.');
+    }
+    
+    return response.json();
 };
