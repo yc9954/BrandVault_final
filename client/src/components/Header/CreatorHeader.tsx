@@ -1,13 +1,12 @@
-import React from 'react'; // React import 추가
+import React from 'react';
+import { NavLink } from 'react-router-dom'; // 💡 NavLink를 임포트합니다.
 import logo from '../../logo.png'; 
 import styles from './CreatorHeader.module.css';
 import type { ContentName } from '../../types';
 
-interface CreatorHeaderProps {
-    onSelect: (contentName: ContentName) => void;
-    currentContent: ContentName;
-}
-// react-icons 사용시 에러 나서 임시로 링크를 직접 넣음
+// ❌ interface CreatorHeaderProps { ... }  -> 더 이상 필요 없음
+
+// react-icons 임시 SVG (변경 없음)
 const iconMap: Record<ContentName, React.ReactNode> = {
     product: ( 
       <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
@@ -36,38 +35,48 @@ const iconMap: Record<ContentName, React.ReactNode> = {
     ),
 };
 
-function CreatorHeader({ onSelect, currentContent }: CreatorHeaderProps) {
+// 💡 props (onSelect, currentContent) 제거
+function CreatorHeader() {
     
-    const renderNavButton = (name: ContentName, text: string) => {
-        const isActive = currentContent === name;
-        const buttonClass = `${styles.navButton} ${isActive ? styles.active : ''}`;
+    // 💡 NavLink를 렌더링하도록 함수 수정
+    const renderNavButton = (name: ContentName, text: string, path: string, isEnd: boolean = false) => {
+        
+        // NavLink가 {isActive}를 제공하므로, className을 함수로 전달
+        const getButtonClass = ({ isActive }: { isActive: boolean }) => {
+            return `${styles.navButton} ${isActive ? styles.active : ''}`;
+        };
 
         return (
             <li key={name}>
-                <button className={buttonClass} onClick={() => onSelect(name)}>
+                {/* 💡 button을 NavLink로 변경, onClick 제거, to/end prop 추가 */}
+                <NavLink to={path} className={getButtonClass} end={isEnd}>
                     <span className={styles.navIcon}>{iconMap[name]}</span>
                     {text}
-                </button>
+                </NavLink>
             </li>
         );
     };
     
     return (
         <header className={styles.sidebarInner}>
-            {/* Binu AI 로고 */}
+            {/* Binu AI 로고 (변경 없음) */}
             <div className={styles.logoWrapper}>
                 <img src={logo} alt="Binu AI Logo" />
                 <span>Binu AI</span>
             </div>
 
-            {/* 네비게이션 */}
+            {/* 네비게이션 (경로 추가) */}
             <nav>
                 <ol className={styles.headerNavList}>
-                    {renderNavButton('product', 'Product Library')}
-                    {renderNavButton('projects', 'My Projects')}
-                    {renderNavButton('dashboard', 'Dashboard')}
-                    {renderNavButton('earnings', 'Earnings')}
-                    {renderNavButton('settings', 'Settings')}
+                    {/* 💡 App.tsx에서 /creator/* 로 설정했으므로, 
+                         여기서는 /creator, /creator/projects 등 절대 경로를 사용합니다.
+                         index route(Product Library)에는 end={true}를 추가합니다.
+                    */}
+                    {renderNavButton('product', 'Product Library', '/creator', true)}
+                    {renderNavButton('projects', 'My Projects', '/creator/projects')}
+                    {renderNavButton('dashboard', 'Dashboard', '/creator/dashboard')}
+                    {renderNavButton('earnings', 'Earnings', '/creator/earnings')}
+                    {renderNavButton('settings', 'Settings', '/creator/settings')}
                 </ol>
             </nav>
         </header>

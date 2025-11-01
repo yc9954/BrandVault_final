@@ -62,6 +62,36 @@ export const fetchProductsByPage = async (
 };
 
 
+type ProductDetailData = ProductWithUrl & {
+  brand: BrandWithUrl & { signedLogoUrl: string | null };
+  assetFormats: string[];
+  view_count: number;
+  download_count: number;
+};
+
+export interface ProductDetailResponse {
+  data: ProductDetailData;
+}
+
+/**
+ * 💡 (신규) ID를 기반으로 단일 상품의 상세 정보를 조회합니다.
+ * @param id 조회할 상품의 ID
+ */
+export const fetchProductById = async (id: number): Promise<ProductDetailResponse> => {
+    
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products/${id}`);
+    
+    if (!response.ok) {
+        if (response.status === 404) {
+            throw new Error('Product not found.');
+        }
+        throw new Error('Failed to fetch product details.');
+    }
+    
+    // 백엔드 응답은 { data: {...} } 형태라고 가정
+    return response.json(); 
+};
+
 // ----------------------------------------------------
 // 2. fetchFeatureBrandList 구현 (상위 브랜드 목록)
 // ----------------------------------------------------

@@ -1,39 +1,37 @@
-import CreatorHeader from '../../components/Header/CreatorHeader'
-import Layout from '../../components/Layout/Layout'
-import React, { useState } from 'react';
-import ProductLibrary from './ProductLibrary'
+import React from 'react'; // useState 제거
+import { Routes, Route } from 'react-router-dom'; // Routes와 Route를 임포트
+import Layout from '../../components/Layout/Layout';
+import CreatorHeader from '../../components/Header/CreatorHeader';
+
+// 렌더링할 페이지 컴포넌트 임포트
+import ProductLibrary from './ProductLibrary';
 import MyProjects from './MyProjects';
 import Dashboard from './Dashboard';
 import Earnings from './Earnings';
 import Settings from './Settings';
-import type { ContentName } from '../../types';
-
-const contentMap: Record<ContentName, React.ReactNode> = {
-    product: <ProductLibrary />,
-    projects: <MyProjects />,   
-    dashboard: <Dashboard />, 
-    earnings: <Earnings />,  
-    settings: <Settings />,
-};
+import ProductDetail from './ProductDetail'; // 💡 상세 페이지 컴포넌트 임포트
 
 function CreatorPage() {
-    const [currentContentName, setCurrentContent] = useState<ContentName>('product');
-    const content = contentMap[currentContentName];
-    
     return (
-        <div>
-            <Layout 
-              header={
-                <CreatorHeader 
-                  onSelect={setCurrentContent} 
-                  currentContent={currentContentName} 
-                />
-              } 
-            >
-                {content}
-            </Layout>
-        </div>
+        <Layout 
+          header={ <CreatorHeader /> } 
+        >
+            <Routes>
+                {/* index는 /creator 경로와 일치합니다. */}
+                <Route index element={<ProductLibrary />} /> 
+                
+                {/* path="product"는 /creator/product 경로와 일치합니다. */}
+                <Route path="product" element={<ProductLibrary />} />
+                <Route path="projects" element={<MyProjects />} />   
+                <Route path="dashboard" element={<Dashboard />} /> 
+                <Route path="earnings" element={<Earnings />} />  
+                <Route path="settings" element={<Settings />} />
+                
+                {/* path="product/:id"는 /creator/product/:id 경로와 일치합니다. */}
+                <Route path="product/:id" element={<ProductDetail />} />
+            </Routes>
+        </Layout>
     );
-}
+};
 
 export default CreatorPage;

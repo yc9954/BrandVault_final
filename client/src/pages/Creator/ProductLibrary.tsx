@@ -194,7 +194,7 @@ function ProductLibrary() {
         <ul className={styles.productGrid}>
           {products.map((product) => (
             <li key={product.product_id} className={styles.productCard}>
-              <Link to={`/product/${product.product_id}`} className={styles.cardLink}>
+              <Link to={`/creator/product/${product.product_id}`} className={styles.cardLink}>
                 <div className={styles.cardImagePlaceholder}>
                   {product.signedImageUrl ? (
                     <img src={product.signedImageUrl} alt={product.product_name} className={styles.cardImage}/>
