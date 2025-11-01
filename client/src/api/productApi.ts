@@ -127,8 +127,8 @@ export const fetchProductDownloadUrl = async (
 ): Promise<DownloadApiResponse> => {
   
   // 쿼리 파라미터로 type을 전달
-  const response = await fetch(`{${process.env.REACT_APP_API_URL}}/api/products/${id}/download?type=${type}`);
-  
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products/${id}/download?type=${type}`);
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to get download URL.');
