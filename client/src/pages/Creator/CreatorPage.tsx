@@ -16,8 +16,6 @@ const contentMap: Record<ContentName, React.ReactNode> = {
     settings: <Settings />,
 };
 
-// const defaultContent = <ProductLibrary />; // 이 줄은 사용되지 않으므로 삭제해도 됩니다.
-
 function CreatorPage() {
     const [currentContentName, setCurrentContent] = useState<ContentName>('product');
     const content = contentMap[currentContentName];

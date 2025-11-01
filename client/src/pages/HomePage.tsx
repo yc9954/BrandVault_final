@@ -5,7 +5,7 @@ import { useCreatorNavigation } from '../hooks/useCreatorNavigation';
 import styles from './Hompage.module.css';
 
 function HomePage() {
-  const {goToCreator} = useCreatorNavigation();
+  const { goToCreator } = useCreatorNavigation();
 
   
   return (
