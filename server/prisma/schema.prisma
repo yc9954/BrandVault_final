@@ -163,10 +163,19 @@ model Product {
   image_url      String?
   ad_contracts   AD_Contract[]
   inquiries      Inquiry[]
+  view_count     Int                @default(0)  // 조회순 (새로운 필드)
+  download_count Int                @default(0)  // 인기순 (새로운 필드)
+  created_at     DateTime           @default(now()) // 최신순
+  updated_at     DateTime?
+
   brand          Brand              @relation(fields: [brand_id], references: [brand_id])
   product_assets Product_Asset[]
   purchased_by   Product_Purchase[]
   projects       Project[]          @relation("ProjectProducts")
+
+  @@index([view_count, product_id])     // 조회순 정렬용
+  @@index([download_count, product_id]) // 인기순 정렬용
+  @@index([created_at, product_id])     // 최신순 정렬용
 }
 
 model Product_Asset {
