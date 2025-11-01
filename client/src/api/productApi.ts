@@ -21,7 +21,9 @@ export interface Product {
  * @returns Product 배열 Promise
  */
 export const fetchAllProducts = async (): Promise<Product[]> => {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  // Vercel 배포 시에는 같은 도메인을 사용하므로 상대 경로 사용
+  // 로컬 개발 시에는 REACT_APP_API_URL이 설정되어 있으면 사용, 없으면 localhost 사용
+  const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
   
   try {
     console.log('API 호출:', `${API_URL}/api/products`);

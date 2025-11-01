@@ -227,7 +227,9 @@ function SplatViewer({ jobId, onClose }: SplatViewerProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    // Vercel 배포 시에는 같은 도메인을 사용하므로 상대 경로 사용
+    // 로컬 개발 시에는 REACT_APP_API_URL이 설정되어 있으면 사용, 없으면 localhost 사용
+    const apiUrl = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
     
     // GLB, PLY, SPLAT 순서로 파일 존재 확인
     // 먼저 정적 파일 서빙 경로로 시도 (인증 불필요)
