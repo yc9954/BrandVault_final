@@ -1,0 +1,26 @@
+.socialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background-color: #2a2a2a; /* 어두운 버튼 배경 */
+  border: none;
+  border-radius: 50%; /* 원형 버튼 */
+  cursor: pointer;
+  padding: 0;
+  
+  /* 애니메이션: 부드러운 전환 효과 */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.socialButton img {
+  width: 24px;
+  height: 24px;
+}
+
+/* 🎨 애니메이션: 호버 시 배경색 변경 및 살짝 커지는 효과 */
+.socialButton:hover {
+  background-color: #3f3f3f;
+  transform: scale(1.05);
+}

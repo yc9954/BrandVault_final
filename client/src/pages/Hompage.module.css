@@ -1,0 +1,122 @@
+/* 🎨 애니메이션: 페이지 로드 시 부드럽게 나타나는 효과 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #000;
+  
+  /* 애니메이션 적용 */
+  animation: fadeIn 0.8s ease-out;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 3rem;
+}
+
+.logo {
+  height: 40px;
+  background-color:aliceblue
+}
+
+.logoText {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color:aliceblue
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 1rem 0;
+  color:aliceblue
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #a0a0a0;
+  margin: 0 0 2.5rem 0;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.button {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primary {
+  background-color: #9F54FF;
+  color: white;
+  border-color: #9F54FF;
+}
+
+.primary:hover {
+  background-color: #8e44ad;
+  border-color: #8e44ad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.3);
+}
+
+.secondary {
+  background-color: #2a2a2a;
+  color: white;
+  border: 2px solid #555;
+}
+
+.secondary:hover {
+  background-color: #3a3a3a;
+  border-color: #999;
+  transform: translateY(-2px);
+}
+
+.dividerText {
+  color: #888;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.socialGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+/* 여기에 있었던 .homePageImageButton 및 
+  .homePageImageButton:hover 스타일이 삭제되었습니다.
+  해당 스타일은 SocialLoginButton.module.css 파일로 이동했습니다.
+*/
