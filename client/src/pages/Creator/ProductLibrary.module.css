@@ -4,7 +4,9 @@
   align-items: center;
   margin-bottom: 2rem;
 }
-
+.header > div {
+  text-align: left;
+}
 .title {
   margin: 0;
   font-size: 2rem;
@@ -105,6 +107,13 @@
   justify-content: center;
   color: #777;
   position: relative;
+}
+/* 제품 이미지 스타일 */
+.cardImage {
+  /* 1. 부모 요소의 크기에 100% 맞춥니다. */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
 }
 
 /* (임시) 즐겨찾기 버튼 */

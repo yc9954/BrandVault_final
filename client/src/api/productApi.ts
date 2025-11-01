@@ -9,6 +9,9 @@ export interface Product {
   color: string | null;
   size: string;
 
+  image_url: string | null; 
+  signedImageUrl: string | null; 
+
   brand: {
     brand_id: number;
     brand_name: string;
@@ -21,11 +24,15 @@ export interface Product {
  * @returns Product 배열 Promise
  */
 export const fetchAllProducts = async (): Promise<Product[]> => {
+  // 이 함수 자체는 수정할 필요가 없습니다.
+  // API 서버(/api/products)가 위에서 정의한 Product 타입에 맞게
+  // signedImageUrl을 잘 만들어서 보내주기만 하면 됩니다.
+
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products`);
+  
   if (!response.ok) {
     throw new Error('서버에서 제품 목록을 불러오는 데 실패했습니다.');
   }
   const data: Product[] = await response.json();
   return data;
 };
-
