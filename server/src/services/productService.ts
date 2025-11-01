@@ -256,8 +256,10 @@ export const generateAssetDownloadUrl = async (id: number, type: 'image' | 'mode
         downloadFilename = `${product.product_name}${fileExtension}`; 
         
     } else if (type === 'model' && product.model_3d_url) {
+        filePath = product.model_3d_url;
         fileExtension = path.extname(product.model_3d_url); // 예: ".stl"
         downloadFilename = `${product.product_name}${fileExtension}`; // 예: "상품명.stl"
+        // console.error(`file name: ${product.model_3d_url}`)
     }
 
     if (!filePath || !downloadFilename) {

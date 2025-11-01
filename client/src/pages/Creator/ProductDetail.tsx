@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from './ProductDetail.module.css';
-import { fetchProductById } from '../../api/productApi';
+// 💡 [수정] 다운로드 API 함수 임포트
+import { fetchProductById, fetchProductDownloadUrl } from '../../api/productApi';
 
-type ProductDetailData = any;
+// 💡 API 응답 타입 정의 (가정)
+// 백엔드 API 응답과 일치해야 합니다.
+type ProductDetailData = any; 
 
 function ProductDetail() {
   // 1. URL에서 product ID 가져오기
@@ -12,6 +15,9 @@ function ProductDetail() {
   const [product, setProduct] = useState<ProductDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 💡 [신규] 다운로드 버튼 로딩 상태
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -19,7 +25,8 @@ function ProductDetail() {
     const loadProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await fetchProductById(parseInt(id));
+        // 💡 id가 string일 수 있으므로 parseInt로 변환
+        const response = await fetchProductById(parseInt(id)); 
         setProduct(response.data);
       } catch (err) {
         setError((err as Error).message);
@@ -30,6 +37,33 @@ function ProductDetail() {
 
     loadProduct();
   }, [id]); // id가 변경될 때마다 데이터를 다시 불러옴
+
+  // 💡 [신규] 다운로드 핸들러 함수
+  const handleDownload = async (type: 'image' | 'model') => {
+    if (!id || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      // 1. 백엔드에 다운로드 URL 요청
+      const response = await fetchProductDownloadUrl(parseInt(id), type);
+      const url = response.data.url;
+
+      // 2. 새 창에서 Signed URL을 열어 다운로드 트리거
+      window.open(url, '_blank');
+
+      // 3. (Optimistic Update) 다운로드 횟수를 UI에 즉시 반영
+      setProduct((prev: ProductDetailData) => ({
+        ...prev,
+        download_count: (prev.download_count || 0) + 1
+      }));
+
+    } catch (err) {
+      alert(`다운로드에 실패했습니다: ${(err as Error).message}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
 
   if (isLoading) {
     return <div className={styles.loading}>데이터를 불러오는 중입니다...</div>;
@@ -43,10 +77,13 @@ function ProductDetail() {
     return <div className={styles.error}>상품을 찾을 수 없습니다.</div>;
   }
 
-
+  // -------------------------
+  // 💡 렌더링 로직 (라이트 모드 기준)
+  // -------------------------
   return (
     <div className={styles.pageContainer}>
-      <Link to="/" className={styles.backButton}>← 뒤로가기</Link>
+      {/* 💡 뒤로가기 버튼 (CreatorPage의 메인 라이브러리 경로로 수정) */}
+      <Link to="/creator" className={styles.backButton}>← 뒤로가기</Link>
       
       <div className={styles.detailLayout}>
         
@@ -90,9 +127,14 @@ function ProductDetail() {
             <span>좋아요 <b>{product.download_count.toLocaleString()}</b>개</span>
           </div>
 
-          <button className={styles.downloadButton}>
-            <svg /* ... (다운로드 아이콘 SVG) ... */ />
-            에셋 다운로드/사용
+          {/* 💡 [수정] 다운로드 버튼에 onClick 및 disabled 상태 추가 */}
+          <button 
+            className={styles.downloadButton}
+            // 3D 모델 다운로드를 기본으로 가정
+            onClick={() => handleDownload('model')}
+            disabled={isDownloading}
+          >
+            {isDownloading ? '다운로드 준비 중...' : '에셋 다운로드/사용'}
           </button>
           
           <div className={styles.buttonGroup}>

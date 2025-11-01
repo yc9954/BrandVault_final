@@ -109,3 +109,30 @@ export const fetchFeatureBrandList = async (): Promise<BrandApiResponse> => {
     
     return response.json();
 };
+
+interface DownloadApiResponse {
+  data: {
+    url: string;
+  };
+}
+
+/**
+ * 💡 (신규) 에셋 다운로드 URL을 백엔드에 요청합니다.
+ * @param id 조회할 상품의 ID
+ * @param type 'image' 또는 'model'
+ */
+export const fetchProductDownloadUrl = async (
+  id: number,
+  type: 'image' | 'model'
+): Promise<DownloadApiResponse> => {
+  
+  // 쿼리 파라미터로 type을 전달
+  const response = await fetch(`{${process.env.REACT_APP_API_URL}}/api/products/${id}/download?type=${type}`);
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to get download URL.');
+  }
+  
+  return response.json(); 
+};
