@@ -72,6 +72,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Vercel의 요청/응답을 Express 형식으로 변환
   // Vercel rewrites를 통해 /api/*가 /api/index로 라우팅되므로
   // 원본 경로를 유지하여 Express 앱에 전달
-  return app(req as Request, res as Response);
+  
+  // 디버깅을 위한 로그
+  console.log('API Request:', {
+    method: req.method,
+    url: req.url,
+    path: (req as any).path || req.url,
+    headers: req.headers,
+    query: req.query,
+  });
+  
+  // Express 앱에 요청 전달
+  // Vercel의 rewrites를 통해 /api/products 같은 요청이 /api/index로 라우팅되지만,
+  // req.url은 여전히 원본 경로를 포함해야 함
+  return app(req as any, res as any);
 }
 
