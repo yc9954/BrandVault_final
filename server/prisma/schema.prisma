@@ -163,6 +163,7 @@ model Product {
   size           String
   color          String?
   image_url      String?
+  model_3d_url   String?
   ad_contracts   AD_Contract[]
   inquiries      Inquiry[]
   view_count     Int                @default(0)  // 조회순 (새로운 필드)

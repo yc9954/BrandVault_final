@@ -105,3 +105,40 @@ export const handleGetUserProducts = async (req: Request, res: Response) => {
         res.status(500).json({ message: `Failed to fetch user's products.`, error});
     }
 }
+
+/**
+ * 💡 [신규]
+ * 에셋 다운로드(2D 또는 3D)를 위한 Signed URL을 생성합니다.
+ */
+export const getProductDownloadUrl = async (req: Request, res: Response) => {
+    try {
+        // 1. ID 및 타입 파싱
+        const id = parseInt(req.params.id as string);
+        const { type } = req.query; // 'image' 또는 'model'
+
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+        
+        // 2. 타입 검증
+        if (type !== 'image' && type !== 'model') {
+            return res.status(400).json({ 
+                message: 'Invalid asset type. Must be "image" or "model".' 
+            });
+        }
+
+        // 3. Service 호출
+        const downloadUrl = await productService.generateAssetDownloadUrl(id, type as 'image' | 'model');
+
+        if (!downloadUrl) {
+            return res.status(404).json({ message: 'Downloadable file not found for this product.' });
+        }
+
+        // 4. URL 응답
+        res.status(200).json({ data: { url: downloadUrl } });
+
+    } catch (error) {
+        console.error('Error generating download URL:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to generate download URL.' });
+    }
+};

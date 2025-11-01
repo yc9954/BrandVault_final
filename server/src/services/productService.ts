@@ -218,3 +218,67 @@ export const getUserProducts = async (brandId: number) => {
   
   return productsWithUrls;
 };
+
+const incrementDownloadCount = (id: number) => {
+    prisma.product.update({
+        where: { product_id: id },
+        data: { 
+            download_count: { increment: 1 }
+        },
+    }).catch(err => {
+        console.error(`Failed to increment download count for product ${id}:`, err);
+    });
+};
+
+export const generateAssetDownloadUrl = async (id: number, type: 'image' | 'model'): Promise<string | null> => {
+    
+    // 1. DB에서 파일 경로 및 상품명 조회
+    const product = await prisma.product.findUnique({
+        where: { product_id: id },
+        select: {
+            image_url: true,    // 2D 이미지 경로
+            model_3d_url: true, // 3D 모델 경로
+            product_name: true  // 💡 다운로드 파일명으로 사용
+        }
+    });
+
+    if (!product) {
+        throw new Error('Product not found');
+    }
+
+    // 2. 다운로드할 파일 경로와 파일명 결정
+    let filePath: string | null = null;
+    let downloadFilename: string | null = null;
+
+    if (type === 'image' && product.image_url) {
+        filePath = product.image_url;
+        // 💡 파일명 생성 (예: "코카콜라 클래식 캔.jpg")
+        // 💡 실제 파일 확장자를 따로 저장해두는 것이 가장 좋습니다.
+        downloadFilename = `${product.product_name}.jpg`; 
+    } else if (type === 'model' && product.model_3d_url) {
+        filePath = product.model_3d_url;
+        // 💡 3D 모델 확장자를 모르므로 임의로 .zip 또는 .glb 등으로 설정
+        downloadFilename = `${product.product_name}.glb`; 
+    }
+
+    // 3. 파일 경로가 없으면 null 반환
+    if (!filePath || !downloadFilename) {
+        return null;
+    }
+
+    // 4. (중요) 다운로드 횟수 1 증가 (Fire-and-forget)
+    incrementDownloadCount(id);
+
+    // 5. 다운로드용 Signed URL 생성
+    try {
+        // 💡 [수정] 님이 작성한 getSignedUrl 시그니처에 맞게 호출
+        // 두 번째 인수로 'filename'을 전달하여 다운로드용 URL 생성
+        const signedUrl = await getSignedUrl(filePath, downloadFilename);
+        
+        return signedUrl;
+
+    } catch (error) {
+        console.error(`Signed URL (download) 생성 실패 (ID: ${id}):`, error);
+        throw new Error('Signed URL generation failed.');
+    }
+};
