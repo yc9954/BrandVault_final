@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ProductLibrary.module.css';
-import { fetchAllProducts, Product } from '../../api/productApi'; 
+import { fetchAllProducts, Product } from '../../api/productApi';
+import SplatUploader from '../../components/SplatUploader/SplatUploader';
+import SplatViewer from '../../components/SplatViewer/SplatViewer';
+import './ProductLibrary.css';
 
 function ProductLibrary() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
+    const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [showViewer, setShowViewer] = useState(false);
+  const [activeTab, setActiveTab] = useState<'products' | 'splat'>('products');
+
   useEffect(() => {
     fetchAllProducts()
       .then(data => { setProducts(data); })
