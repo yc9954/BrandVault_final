@@ -69,22 +69,49 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
 
 // Export the Express app as a Vercel serverless function
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Vercel의 요청/응답을 Express 형식으로 변환
-  // Vercel rewrites를 통해 /api/*가 /api/index로 라우팅되므로
-  // 원본 경로를 유지하여 Express 앱에 전달
+  // Vercel의 rewrites를 통해 /api/*가 /api/index로 라우팅되지만,
+  // 원본 경로는 x-vercel-rewrite 헤더나 req.url에 포함될 수 있습니다.
+  // req.url이 /api/index인 경우 원본 경로를 복원해야 합니다.
+  
+  // 원본 URL 복원 - rewrites로 인해 변경된 경로를 원본 경로로 복원
+  const originalUrl = req.url || '/api/index';
+  let pathToUse = originalUrl;
+  
+  // x-vercel-rewrite 헤더에서 원본 경로 확인 (있을 경우)
+  const rewriteHeader = req.headers['x-vercel-rewrite'] || req.headers['x-rewrite-url'];
+  if (rewriteHeader) {
+    pathToUse = rewriteHeader as string;
+  } else if (originalUrl === '/api/index' || originalUrl.startsWith('/api/index?')) {
+    // req.url이 /api/index인 경우, x-path 또는 x-matched-path 헤더 확인
+    const matchedPath = req.headers['x-matched-path'] || req.headers['x-path'];
+    if (matchedPath) {
+      pathToUse = matchedPath as string;
+    }
+  }
+  
+  // Express Request 객체 생성 및 원본 경로 설정
+  const expressReq = req as any;
+  if (pathToUse !== originalUrl) {
+    expressReq.url = pathToUse;
+    expressReq.originalUrl = pathToUse;
+    expressReq.path = pathToUse.split('?')[0];
+  }
   
   // 디버깅을 위한 로그
   console.log('API Request:', {
     method: req.method,
-    url: req.url,
-    path: (req as any).path || req.url,
-    headers: req.headers,
+    originalUrl: originalUrl,
+    pathToUse: pathToUse,
+    headers: {
+      'x-vercel-rewrite': req.headers['x-vercel-rewrite'],
+      'x-rewrite-url': req.headers['x-rewrite-url'],
+      'x-matched-path': req.headers['x-matched-path'],
+      'x-path': req.headers['x-path'],
+    },
     query: req.query,
   });
   
   // Express 앱에 요청 전달
-  // Vercel의 rewrites를 통해 /api/products 같은 요청이 /api/index로 라우팅되지만,
-  // req.url은 여전히 원본 경로를 포함해야 함
-  return app(req as any, res as any);
+  return app(expressReq, res as any);
 }
 
