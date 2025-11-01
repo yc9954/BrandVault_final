@@ -48,9 +48,30 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// 404 handler for unmatched API routes
+app.use('/api', (req: Request, res: Response) => {
+  res.status(404).json({ 
+    error: 'Not Found', 
+    message: `API route ${req.method} ${req.path} not found`,
+    path: req.path,
+    url: req.url
+  });
+});
+
+// Error handler
+app.use((err: Error, req: Request, res: Response, next: any) => {
+  console.error('Express error:', err);
+  res.status(500).json({ 
+    error: 'Internal Server Error', 
+    message: err.message 
+  });
+});
+
 // Export the Express app as a Vercel serverless function
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Vercel의 요청/응답을 Express 형식으로 변환
+  // Vercel rewrites를 통해 /api/*가 /api/index로 라우팅되므로
+  // 원본 경로를 유지하여 Express 앱에 전달
   return app(req as Request, res as Response);
 }
 
