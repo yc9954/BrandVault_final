@@ -69,7 +69,7 @@ export const getProductList = async (req: Request, res: Response) => {
 export const getProductDetails = async (req: Request, res: Response) => {
     try {
         // 1. URL 파라미터에서 ID 추출 및 검증
-        const id = parseInt(req.params?.id);
+        const id = parseInt(req.params.id as string);
         if (isNaN(id)) {
             return res.status(400).json({ message: 'Invalid product ID.' });
         }
