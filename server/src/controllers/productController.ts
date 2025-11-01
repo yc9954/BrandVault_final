@@ -66,6 +66,33 @@ export const getProductList = async (req: Request, res: Response) => {
     }
 };
 
+export const getProductDetails = async (req: Request, res: Response) => {
+    try {
+        // 1. URL 파라미터에서 ID 추출 및 검증
+        const id = parseInt(req.params?.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+
+        // 2. Service 호출
+        const product = await productService.fetchProductById(id);
+        
+        // 3. 성공 응답
+        res.status(200).json({ data: product });
+
+    } catch (error) {
+        // 4. 에러 처리
+        const message = (error as Error).message;
+        if (message.includes('Product not found')) {
+            // Service에서 상품을 찾지 못한 경우
+            return res.status(404).json({ message });
+        }
+        
+        console.error('Error fetching product details:', error);
+        res.status(500).json({ message: 'Failed to fetch product details.' });
+    }
+};
+
 export const handleGetUserProducts = async (req: Request, res: Response) => {
     try {
         const brandId = req.user.brandId;
