@@ -8,7 +8,9 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import fileRoutes from './routes/fileRoutese.js'
+import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -34,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/splat", splatRoutes);
+app.use('/api/brands', brandRoutes);
 
 app.use("/api/file", fileRoutes)
 

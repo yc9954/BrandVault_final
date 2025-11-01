@@ -11,9 +11,9 @@ function ProductLibrary() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-    const [currentJobId, setCurrentJobId] = useState<string | null>(null);
-  const [showViewer, setShowViewer] = useState(false);
-  const [activeTab, setActiveTab] = useState<'products' | 'splat'>('products');
+  // const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  // const [showViewer, setShowViewer] = useState(false);
+  // const [activeTab, setActiveTab] = useState<'products' | 'splat'>('products');
 
   useEffect(() => {
     fetchAllProducts()

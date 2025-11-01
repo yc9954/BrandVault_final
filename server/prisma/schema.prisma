@@ -53,8 +53,10 @@ model Brand {
   inquiries        Inquiry[]
   platform_users   Platform_User[]
   products         Product[]
+  asset_count      Int                    @default(0)
   report_purchases Report_purchase[]
   subscriptions    Subscription[]
+  @@index([asset_count])
 }
 
 model Platform_User {
