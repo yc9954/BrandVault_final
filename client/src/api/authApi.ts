@@ -13,6 +13,7 @@ export const loginCreator = async (): Promise<{ message: string }> => {
       withCredentials: true, // 쿠키를 받기 위해 필요
     }
   );
+  console.log(response.data)
   return response.data;
 };
 
