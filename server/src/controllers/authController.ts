@@ -10,7 +10,8 @@ export const handleCreatorLogin = async(req: Request, res: Response) => {
             httpOnly: true, 
             secure: true,
             maxAge: 3600000, 
-            sameSite: 'none'
+            sameSite: 'none',
+            domain: 'brandvault.onrender.com'
         });
 
         res.status(200).json({message: '로그인 성공'});
