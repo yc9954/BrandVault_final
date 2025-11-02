@@ -94,13 +94,11 @@ function MyProjects() {
             ) : (
                 <div className={styles.grid}>
                     {products.map(product => (
-                        
                         <ProductCard key={product.purchaseId} product={product} />
                     ))}
                 </div>
             )}
 
-            {/* 5. 로딩 인디케이터 UI도 분리합니다. */}
             <div className={styles.loader}>
                 {isFetchingMore && <p>불러오는 중...</p>}
                 {!hasMore && products.length > 0}

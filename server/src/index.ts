@@ -22,8 +22,9 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors({
   credentials: true,
-  origin: process.env.CLIENT_URL || 'http://localhost:3001'
-}));
+  origin: process.env.CLIENT_URL || 'http://localhost:3001',
+  
+})); 
 
 app.use(express.json());
 app.use(cookieParser());

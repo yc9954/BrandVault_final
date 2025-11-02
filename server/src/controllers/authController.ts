@@ -10,7 +10,7 @@ export const handleCreatorLogin = async(req: Request, res: Response) => {
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
             maxAge: 3600000, 
-            sameSite: 'lax'
+            sameSite: 'none'
         });
 
         res.status(200).json({message: '로그인 성공'});
@@ -29,7 +29,7 @@ export const handleBrandLogin = async(req: Request, res: Response) => {
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
             maxAge: 3600000, 
-            sameSite: 'lax'
+            sameSite: 'none'
         });
 
         res.status(200).json({message: '로그인 성공'});
