@@ -8,7 +8,7 @@ export const handleCreatorLogin = async(req: Request, res: Response) => {
 
         res.cookie('jwt', token, {
             httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
+            secure: true,
             maxAge: 3600000, 
             sameSite: 'none'
         });
@@ -27,7 +27,7 @@ export const handleBrandLogin = async(req: Request, res: Response) => {
 
         res.cookie('jwt', token, {
             httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
+            secure: true,
             maxAge: 3600000, 
             sameSite: 'none'
         });
