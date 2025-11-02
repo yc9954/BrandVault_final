@@ -1,0 +1,10 @@
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex; /* 내부 컨텐츠가 flex 레이아웃을 유지하도록 */
+  flex-direction: column;
+  background-color: #1c1c1c; /* 카드 배경색 */
+  border-radius: 8px; /* 카드 둥근 모서리 */
+  overflow: hidden;
+  height: 100%;
+}

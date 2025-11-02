@@ -116,6 +116,14 @@
   gap: 1rem;
 }
 
+
+.errorMessage {
+  color: #ff4d4f; /* 빨간색 계열 */
+  font-size: 14px;
+  margin-top: 15px;
+  text-align: center;
+}
+
 /* 여기에 있었던 .homePageImageButton 및 
   .homePageImageButton:hover 스타일이 삭제되었습니다.
   해당 스타일은 SocialLoginButton.module.css 파일로 이동했습니다.

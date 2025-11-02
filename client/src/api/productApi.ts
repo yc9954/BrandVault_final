@@ -136,3 +136,42 @@ export const fetchProductDownloadUrl = async (
   
   return response.json(); 
 };
+
+
+// API 응답의 타입을 정의합니다.
+interface MyProductsApiResponse {
+    products: ProductWithUrl[]; // ProductWithUrl 타입은 이미 파일에 정의되어 있습니다.
+    nextCursor: number | null;
+}
+
+/**
+ * (신규) 현재 로그인된 사용자가 구매한 에셋 목록을 가져옵니다. (무한 스크롤용)
+ * @param limit 한 번에 가져올 개수
+ * @param cursor 다음 페이지를 시작할 위치 ID
+ * @returns MyProductsApiResponse
+ */
+export const fetchUserProducts = async (
+    limit: number,
+    cursor: number | null
+): Promise<MyProductsApiResponse> => {
+    
+    const params = new URLSearchParams({
+        limit: String(limit),
+    });
+
+    if (cursor) {
+        params.append('cursor', String(cursor));
+    }
+
+    // ⭐ 중요: 인증이 필요한 요청이므로 credentials: 'include' 옵션으로 쿠키를 함께 보냅니다.
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products/user?${params.toString()}`, {
+        credentials: 'include', 
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch my purchased products.');
+    }
+
+    // 백엔드에서 받은 { products, nextCursor } 객체를 그대로 반환합니다.
+    return response.json();
+};

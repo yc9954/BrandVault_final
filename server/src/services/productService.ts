@@ -271,10 +271,11 @@ export const getUserProducts = async (
 
             return {
                 purchaseId: purchase.purchase_id,
+                productId: product.product_id,
                 productName: product.product_name,
                 brandName: product.brand.brand_name,
                 viewCount: product.view_count,
-                likeCount: product.download_count,
+                downloadCount: product.download_count,
                 signedImageUrl,
             };
         })
