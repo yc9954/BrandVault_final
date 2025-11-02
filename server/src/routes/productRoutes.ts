@@ -3,7 +3,7 @@ import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUser
 import { authenticateToken } from '../midwares/authMiddleware.js';
 const router = Router();
 router.get('/', getProductList);
-router.get('/:id', getProductDetails);
 router.get('/user', authenticateToken, handleGetUserProducts);
+router.get('/:id', getProductDetails);
 router.get('/:id/download', getProductDownloadUrl);
 export default router;

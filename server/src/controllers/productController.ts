@@ -93,16 +93,40 @@ export const getProductDetails = async (req: Request, res: Response) => {
     }
 };
 
+// export const handleGetUserProducts = async (req: Request, res: Response) => {
+//     try {
+//         const userId = req.user.userId;
+//         if (!userId) {
+//             return res.status(401).json({message: '비정상적인 접근입니다.'});
+//         }
+//         const products = await productService.getUserProducts(userId);
+//         res.status(200).json(products);
+//     } catch (error) {
+//         res.status(500).json({ message: `Failed to fetch user's products.`, error});
+//     }
+// }
+
 export const handleGetUserProducts = async (req: Request, res: Response) => {
     try {
-        const brandId = req.user.brandId;
-        if (!brandId) {
-            return res.status(401).json({message: '비정상적인 접근입니다.'});
+        // 1. 미들웨어에서 검증된 userId를 사용합니다.
+        const userId = req.user?.userId;
+        if (!userId) {
+            // 이 케이스는 보통 미들웨어에서 처리되지만, 방어 코드로 유지합니다.
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
         }
-        const products = await productService.getUserProducts(brandId);
-        res.status(200).json(products);
+
+        // 2. 무한 스크롤을 위한 쿼리 파라미터 추출 및 타입 변환
+        const limit = parseInt(req.query.limit as string) || 9; // 기본 9개
+        const cursor = req.query.cursor ? parseInt(req.query.cursor as string) : undefined;
+
+        // 3. 수정된 서비스 함수 호출
+        const result = await productService.getUserProducts(userId, limit, cursor);
+        
+        res.status(200).json(result);
+
     } catch (error) {
-        res.status(500).json({ message: `Failed to fetch user's products.`, error});
+        console.error("User's products fetch failed:", error);
+        res.status(500).json({ message: "구매한 상품 목록을 가져오는 데 실패했습니다." });
     }
 }
 

@@ -187,37 +187,116 @@ export const fetchProductById = async (id: number) => {
     };
 };
 
-export const getUserProducts = async (brandId: number) => {
-  // 2. DB에서 기본 데이터를 가져옵니다.
-  const products = await prisma.product.findMany({
-    where: {
-      brand_id: brandId,
-    },
-    include: {
-      projects: true,
-    },
-  });
+// export const getUserProducts = async (brandId: number) => {
+//   // 2. DB에서 기본 데이터를 가져옵니다.
+//   const products = await prisma.product.findMany({
+//     where: {
+//       brand_id: brandId,
+//     },
+//     include: {
+//       projects: true,
+//     },
+//   });
 
-  // 3. (핵심) 여기도 똑같이 GCS Signed URL을 생성합니다.
-  const productsWithUrls = await Promise.all(
-    products.map(async (product) => {
-      let signedImageUrl = null;
-      if (product.image_url) {
-        try {
-          signedImageUrl = await getSignedUrl(product.image_url);
-        } catch (error) {
-          console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
-        }
-      }
+//   // 3. (핵심) 여기도 똑같이 GCS Signed URL을 생성합니다.
+//   const productsWithUrls = await Promise.all(
+//     products.map(async (product) => {
+//       let signedImageUrl = null;
+//       if (product.image_url) {
+//         try {
+//           signedImageUrl = await getSignedUrl(product.image_url);
+//         } catch (error) {
+//           console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
+//         }
+//       }
       
-      return {
-        ...product,
-        signedImageUrl: signedImageUrl,
-      };
-    })
-  );
+//       return {
+//         ...product,
+//         signedImageUrl: signedImageUrl,
+//       };
+//     })
+//   );
   
-  return productsWithUrls;
+//   return productsWithUrls;
+// };
+
+/*
+ * 사용자가 구매한 상품 목록을 커서 기반으로 조회하고 Signed URL을 생성합니다.
+ * @param creatorId 사용자(크리에이터) ID
+ * @param limit 한 페이지에 가져올 아이템 수
+ * @param cursor 마지막으로 조회된 아이템의 purchase_id
+ */
+export const getUserProducts = async (
+    creatorId: number,
+    limit: number,
+    cursor?: number
+) => {
+    const take = limit + 1;
+
+    const purchases = await prisma.product_Purchase.findMany({
+        where: {
+            creator_id: creatorId,
+        },
+        take: take,
+        ...(cursor && {
+            cursor: { purchase_id: cursor },
+            skip: 1,
+        }),
+        orderBy: {
+            purchase_id: 'desc',
+        },
+        include: {
+            product: {
+                include: {
+                    brand: { select: { brand_name: true } },
+                }
+            }
+        }
+    });
+
+    const hasMore = purchases.length > limit;
+    const items = hasMore ? purchases.slice(0, limit) : purchases;
+
+    const productsWithUrls = await Promise.all(
+        items.map(async (purchase) => {
+            const { product } = purchase;
+            let signedImageUrl = null;
+            if (product.image_url) {
+                try {
+                    signedImageUrl = await getSignedUrl(product.image_url);
+                } catch (error) {
+                    console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
+                }
+            }
+
+            return {
+                purchaseId: purchase.purchase_id,
+                productName: product.product_name,
+                brandName: product.brand.brand_name,
+                viewCount: product.view_count,
+                likeCount: product.download_count,
+                signedImageUrl,
+            };
+        })
+    );
+
+    // --- 여기를 수정했습니다 ---
+    // hasMore가 true일 때만 마지막 아이템에 접근하여 nextCursor를 계산합니다.
+    // 이렇게 하면 items 배열이 비어있을 때 발생하는 런타임 에러를 원천적으로 방지할 수 있습니다.
+    let nextCursor: number | null = null;
+
+    if (hasMore) {
+    // hasMore가 true일 때 items 배열은 항상 요소가 있음을 보장합니다.
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+            nextCursor = lastItem.purchase_id;
+        }
+    }
+
+    return {
+        products: productsWithUrls,
+        nextCursor: nextCursor,
+    };
 };
 
 const incrementDownloadCount = (id: number) => {
