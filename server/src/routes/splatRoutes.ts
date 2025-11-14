@@ -26,16 +26,28 @@ const router = Router();
  *                   format: binary
  *                 description: 최대 10개의 이미지 파일
  *     responses:
- *       200:
- *         description: 변환 작업 시작
+ *       202:
+ *         description: 변환 작업 시작 (Accepted)
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 변환이 시작되었습니다.
  *                 jobId:
  *                   type: string
  *                   description: 작업 ID
+ *                 status:
+ *                   type: string
+ *                   example: processing
+ *       400:
+ *         description: 잘못된 요청 (이미지 파일 없음)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: 인증 실패
  *         content:
