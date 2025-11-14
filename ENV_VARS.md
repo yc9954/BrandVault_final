@@ -35,6 +35,17 @@ CLIENT_URL=https://brandvault3d.vercel.app
 - CORS 허용할 클라이언트 URL
 - 보통 `REACT_APP_API_URL`과 동일
 
+### 쿠키 도메인 설정 (선택적, 대부분 불필요)
+```
+# COOKIE_DOMAIN은 설정하지 마세요!
+```
+- **현재 배포 환경 (Render 서버 + Vercel 프론트)에서는 설정하지 않아야 합니다**
+- 크로스 도메인 환경에서는 각 도메인이 자체 쿠키를 설정하므로 `domain` 옵션을 사용하지 않습니다
+- **언제 설정하는가?**
+  - 같은 루트 도메인의 서브도메인 간 공유가 필요한 경우만 (예: `api.example.com` ↔ `app.example.com` → `.example.com`)
+  - 현재 Render + Vercel 환경: **설정하지 않음**
+- 로컬 개발 환경: 설정하지 않으면 `localhost`에서 자동 작동
+
 ## 선택적 환경 변수
 
 ### Replicate API (Splat 변환 기능)
