@@ -1,5 +1,6 @@
 import type { Request, Response} from 'express'
 import * as authService from '../services/authService.js'
+import passport from '../config/passport.js'
 
 // 쿠키 설정 헬퍼 함수
 const getCookieOptions = () => {
@@ -48,7 +49,41 @@ export const handleLogout = (req: Request, res: Response) => {
         ...getCookieOptions(),
         maxAge: 0, // 즉시 만료
     });
+    // Passport 세션 로그아웃 (있는 경우)
+    if (req.logout) {
+        req.logout((err) => {
+            if (err) {
+                console.error('로그아웃 에러:', err);
+            }
+        });
+    }
     res.status(200).json({ message: '로그아웃 성공' });
+};
+
+/**
+ * Google OAuth 로그인 시작
+ */
+export const handleGoogleLogin = passport.authenticate('google', {
+    scope: ['profile', 'email'],
+});
+
+/**
+ * Google OAuth 콜백 처리
+ */
+export const handleGoogleCallback = (req: Request, res: Response) => {
+    passport.authenticate('google', { session: false }, (err: any, user: any) => {
+        if (err || !user) {
+            return res.redirect(
+                `${process.env.CLIENT_URL || 'http://localhost:3001'}/login?error=google_auth_failed`
+            );
+        }
+
+        // JWT 토큰을 쿠키에 설정
+        res.cookie('jwt', user.token, getCookieOptions());
+
+        // 프론트엔드로 리다이렉트
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3001'}/dashboard`);
+    })(req, res);
 };
 
 

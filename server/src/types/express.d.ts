@@ -9,6 +9,7 @@ declare global {
     namespace Express {
         interface Request {
             user?: JwtPayload;
+            logout?: (callback: (err?: any) => void) => void;
         }
     }
 }

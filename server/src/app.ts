@@ -11,6 +11,8 @@ import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
+import passport from './config/passport.js';
+import session from 'express-session';
 import path from 'path';
 
 const app = express();
@@ -22,6 +24,24 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
+
+// 세션 설정 (Google OAuth용)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'default-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24시간
+    },
+  })
+);
+
+// Passport 초기화
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
