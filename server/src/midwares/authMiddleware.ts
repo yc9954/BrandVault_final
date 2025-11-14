@@ -24,8 +24,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         }
         const jwtPayload = payload as JwtPayload;
         req.user = {
-            userId: jwtPayload.userId,
-            brandId: jwtPayload.brandId,
+            ...(jwtPayload.userId !== undefined && { userId: jwtPayload.userId }),
+            ...(jwtPayload.brandId !== undefined && { brandId: jwtPayload.brandId }),
         };
         next();
     });
