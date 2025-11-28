@@ -5,7 +5,9 @@ import styles from './ProductLibrary.module.css';
 // 💡 필요한 API 함수들 (이미 구현되었다고 가정)
 import { 
   fetchProductsByPage, 
-  fetchFeatureBrandList, 
+  fetchFeatureBrandList,
+  searchProducts,
+  searchBrands,
 } from '../../api/productApi'; 
 
 
@@ -38,6 +40,15 @@ function ProductLibrary() {
   
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 검색 관련 상태
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<{
+    brands: BrandWithUrl[];
+    products: ProductWithUrl[];
+  }>({ brands: [], products: [] });
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   
   // 💡 무한 스크롤: 에셋을 페이지 단위로 불러오는 함수 (커서 상태에 의존)
@@ -113,8 +124,10 @@ function ProductLibrary() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
-  // 2. 스크롤 이벤트 감지 로직 (이전과 동일)
+  // 2. 스크롤 이벤트 감지 로직 (검색 결과가 아닐 때만)
   useEffect(() => {
+    if (showSearchResults) return; // 검색 결과 표시 중일 때는 무한 스크롤 비활성화
+
     const handleScroll = () => {
       const scrollY = window.scrollY + window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
@@ -127,7 +140,51 @@ function ProductLibrary() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isFetching, hasMore, loadMoreProducts]);
+  }, [isFetching, hasMore, loadMoreProducts, showSearchResults]);
+
+  // 검색 함수
+  const handleSearch = useCallback(async (keyword: string) => {
+    if (!keyword || keyword.trim() === '') {
+      setShowSearchResults(false);
+      setSearchResults({ brands: [], products: [] });
+      return;
+    }
+
+    setIsSearching(true);
+    setShowSearchResults(true);
+    setError(null);
+
+    try {
+      const [brandsResult, productsResult] = await Promise.all([
+        searchBrands(keyword.trim(), 10),
+        searchProducts(keyword.trim(), 20),
+      ]);
+
+      setSearchResults({
+        brands: brandsResult.data,
+        products: productsResult.data,
+      });
+    } catch (err) {
+      setError((err as Error).message);
+      setSearchResults({ brands: [], products: [] });
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // 검색어 입력 핸들러 (디바운싱)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchKeyword !== '') {
+        handleSearch(searchKeyword);
+      } else {
+        setShowSearchResults(false);
+        setSearchResults({ brands: [], products: [] });
+      }
+    }, 500); // 500ms 디바운싱
+
+    return () => clearTimeout(timeoutId);
+  }, [searchKeyword, handleSearch]);
   
 
   if (error) { return <div className={styles.error}>에러가 발생했습니다: {error} ❌</div>; }
@@ -135,45 +192,131 @@ function ProductLibrary() {
   return (
     <div className={styles.container}>
       
-      {/* 1행: 헤더 섹션 */}
-      <header className={styles.header}>
-        <div>
-          <h2 className={styles.title}>Product Library</h2>
-          <p className={styles.subtitle}>Browse and favorite products for your next video project</p>
-        </div>
-        <button className={styles.createButton}>
-          <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
-            <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
-          </svg>
-          Create New Project
-        </button>
-      </header>
+      {/* 헤더와 검색 창을 하나의 sticky 컨테이너로 묶기 */}
+      <div className={styles.stickyHeader}>
+        {/* 1행: 헤더 섹션 */}
+        <header className={styles.header}>
+          <div>
+            <h2 className={styles.title}>Product Library</h2>
+            <p className={styles.subtitle}>Browse and favorite products for your next video project</p>
+          </div>
+          <button className={styles.createButton}>
+            <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
+              <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
+            </svg>
+            Create New Project
+          </button>
+        </header>
 
-      {/* 2행: 와이드 배너 (Brand 데이터 재활용, 가로 스크롤) */}
-      {isInitialLoading ? <div className={styles.wideBannerLoading}>배너 로딩 중...</div> : wideBanners.length > 0 && (
-        <div className={`${styles.horizontalScrollContainer} ${styles.wideBannerScroll}`}>
-          {wideBanners.map((brand) => (
-            <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
-              <div className={styles.bannerContent}>
-                <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
-                <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count} </p>
-              </div>
-            </Link>
-          ))}
+        {/* 필터/검색 섹션 - 헤더 바로 아래 */}
+        <div className={styles.filterBar}>
+        <div className={styles.searchBox}>
+          <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="#777">
+            <path d="M39.8 41.95 26.6 28.75q-1.5 1.3-3.5 2.025-2 .725-4.25 .725-5.4 0-9.15-3.75T6 18.6q0-5.3 3.75-9.05T18.85 5.8q5.3 0 9.05 3.75t3.75 9.05q0 2.25-.725 4.25-.725 2-2.025 3.5l13.2 13.2ZM19 30q4.6 0 7.8-3.2t3.2-7.8q0-4.6-3.2-7.8T19 8q-4.6 0-7.8 3.2T8 19q0 4.6 3.2 7.8T19 30Z"/>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Search products or brands..." 
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
         </div>
-      )}
-      
-      {/* 필터/검색 섹션 */}
-      <div className={styles.filterBar}>
-        <div className={styles.searchBox}><svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="#777"><path d="M39.8 41.95 26.6 28.75q-1.5 1.3-3.5 2.025-2 .725-4.25 .725-5.4 0-9.15-3.75T6 18.6q0-5.3 3.75-9.05T18.85 5.8q5.3 0 9.05 3.75t3.75 9.05q0 2.25-.725 4.25-.725 2-2.025 3.5l13.2 13.2ZM19 30q4.6 0 7.8-3.2t3.2-7.8q0-4.6-3.2-7.8T19 8q-4.6 0-7.8 3.2T8 19q0 4.6 3.2 7.8T19 30Z"/></svg><input type="text" placeholder="Search products or brands..." /></div>
         <select className={styles.dropdown}><option>All Categories</option></select>
         <select className={styles.dropdown}><option>Newest</option></select>
+        </div>
       </div>
 
-      {/* 4행: 추천 브랜드 목록 (가로 스크롤) */}
-      {isInitialLoading ? <div className={styles.loading}>브랜드 로딩 중...</div> : featuredBrands.length > 0 && (
+      {/* 검색 결과 표시 */}
+      {showSearchResults && (
         <>
-          <h3 className={styles.sectionTitle}>Featured Brands</h3>
+          {/* 검색된 브랜드 */}
+          {searchResults.brands.length > 0 && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>Search Results: Brands</h3>
+              {isSearching ? (
+                <div className={styles.loading}>검색 중...</div>
+              ) : (
+                <div className={styles.horizontalScrollContainer}>
+                  {searchResults.brands.map((brand) => (
+                    <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
+                      <div className={styles.bannerContent}>
+                        <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
+                        <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* 검색된 에셋 */}
+          {searchResults.products.length > 0 && (
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>Search Results: Products</h3>
+              {isSearching ? (
+                <div className={styles.loading}>검색 중...</div>
+              ) : (
+                <ul className={styles.productGrid}>
+                  {searchResults.products.map((product) => (
+                    <li key={product.product_id} className={styles.productCard}>
+                      <Link to={`/creator/product/${product.product_id}`} className={styles.cardLink}>
+                        <div className={styles.cardImagePlaceholder}>
+                          {product.signedImageUrl ? (
+                            <img src={product.signedImageUrl} alt={product.product_name} className={styles.cardImage}/>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" height={40} width={40} viewBox="0 0 48 48" fill="currentColor"><path d="M6 42V6h36v36Zm3-3h30V9H9Zm0 0V9v30Zm4.2-4.1h21.6l-6.6-8.8-5.7 7.6-3.9-5.2Z"/></svg>
+                          )}
+                        </div>
+                        <div className={styles.cardContent}>
+                          <h3>{product.product_name}</h3>
+                          <p className={styles.cardSponsor}>Sponsored by {product.brand?.brand_name || 'Unknown'}</p>
+                          <div className={styles.cardTags}>
+                            <span className={styles.tag}>{product.category}</span>
+                            <span className={styles.tagPrice}>${product.pricePerKView || 'N/A'}/1K views</span>
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {/* 검색 결과가 없을 때 */}
+          {!isSearching && searchResults.brands.length === 0 && searchResults.products.length === 0 && searchKeyword.trim() !== '' && (
+            <section className={styles.section}>
+              <p className={styles.noProducts}>검색 결과가 없습니다.</p>
+            </section>
+          )}
+        </>
+      )}
+
+      {/* 기본 콘텐츠 (검색 결과가 없을 때만 표시) */}
+      {!showSearchResults && (
+        <>
+          {/* 2행: 와이드 배너 (Brand 데이터 재활용, 가로 스크롤) */}
+          <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>Featured Brands</h3>
+        {isInitialLoading ? <div className={styles.wideBannerLoading}>배너 로딩 중...</div> : wideBanners.length > 0 && (
+          <div className={`${styles.horizontalScrollContainer} ${styles.wideBannerScroll}`}>
+            {wideBanners.map((brand) => (
+              <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
+                <div className={styles.bannerContent}>
+                  <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
+                  <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count} </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 4행: 추천 브랜드 목록 (가로 스크롤) */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>Popular Brands</h3>
+        {isInitialLoading ? <div className={styles.loading}>브랜드 로딩 중...</div> : featuredBrands.length > 0 && (
           <div className={styles.horizontalScrollContainer}>
             {featuredBrands.map((brand) => (
               <div key={brand.brand_id} className={styles.brandCard} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}> 
@@ -184,42 +327,46 @@ function ProductLibrary() {
               </div>
             ))}
           </div>
-        </>
-      )}
+        )}
+      </section>
 
       {/* 5행: 추천 에셋 목록 (무한 스크롤 - 세로 그리드) */}
-      <h3 className={styles.sectionTitle} style={{ marginTop: '3rem' }}>Recommended Assets</h3>
-      
-      {products.length === 0 && !isFetching && !isInitialLoading ? (<p className={styles.noProducts}>등록된 제품이 없습니다.</p>) : (
-        <ul className={styles.productGrid}>
-          {products.map((product) => (
-            <li key={product.product_id} className={styles.productCard}>
-              <Link to={`/creator/product/${product.product_id}`} className={styles.cardLink}>
-                <div className={styles.cardImagePlaceholder}>
-                  {product.signedImageUrl ? (
-                    <img src={product.signedImageUrl} alt={product.product_name} className={styles.cardImage}/>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" height={40} width={40} viewBox="0 0 48 48" fill="currentColor"><path d="M6 42V6h36v36Zm3-3h30V9H9Zm0 0V9v30Zm4.2-4.1h21.6l-6.6-8.8-5.7 7.6-3.9-5.2Z"/></svg>
-                  )}
-                </div>
-
-                <div className={styles.cardContent}>
-                  <h3>{product.product_name}</h3>
-                  <p className={styles.cardSponsor}>Sponsored by {product.brand.brand_name}</p>
-                  <div className={styles.cardTags}>
-                    <span className={styles.tag}>{product.category}</span>
-                    <span className={styles.tagPrice}>${product.pricePerKView || 'N/A'}/1K views</span>
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>Recommended Assets</h3>
+        
+        {products.length === 0 && !isFetching && !isInitialLoading ? (<p className={styles.noProducts}>등록된 제품이 없습니다.</p>) : (
+          <ul className={styles.productGrid}>
+            {products.map((product) => (
+              <li key={product.product_id} className={styles.productCard}>
+                <Link to={`/creator/product/${product.product_id}`} className={styles.cardLink}>
+                  <div className={styles.cardImagePlaceholder}>
+                    {product.signedImageUrl ? (
+                      <img src={product.signedImageUrl} alt={product.product_name} className={styles.cardImage}/>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" height={40} width={40} viewBox="0 0 48 48" fill="currentColor"><path d="M6 42V6h36v36Zm3-3h30V9H9Zm0 0V9v30Zm4.2-4.1h21.6l-6.6-8.8-5.7 7.6-3.9-5.2Z"/></svg>
+                    )}
                   </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+
+                  <div className={styles.cardContent}>
+                    <h3>{product.product_name}</h3>
+                    <p className={styles.cardSponsor}>Sponsored by {product.brand.brand_name}</p>
+                    <div className={styles.cardTags}>
+                      <span className={styles.tag}>{product.category}</span>
+                      <span className={styles.tagPrice}>${product.pricePerKView || 'N/A'}/1K views</span>
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        
+        {/* 무한 스크롤 로딩 인디케이터 */}
+        {isFetching && <div className={styles.loadingMore}>에셋을 더 불러오는 중입니다...</div>}
+        {!hasMore && products.length > 0 && <div className={styles.endOfList}>모든 에셋을 불러왔습니다.</div>}
+      </section>
+        </>
       )}
-      
-      {/* 무한 스크롤 로딩 인디케이터 */}
-      {isFetching && <div className={styles.loadingMore}>에셋을 더 불러오는 중입니다...</div>}
-      {!hasMore && products.length > 0 && <div className={styles.endOfList}>모든 에셋을 불러왔습니다.</div>}
     </div>
   );
 }

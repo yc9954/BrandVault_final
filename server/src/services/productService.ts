@@ -359,3 +359,53 @@ export const generateAssetDownloadUrl = async (id: number, type: 'image' | 'mode
         throw new Error('Signed URL generation failed.');
     }
 };
+
+/**
+ * 키워드로 상품을 검색하고 Signed URL을 생성하여 반환합니다.
+ */
+export const searchProducts = async (keyword: string, limit: number = 20): Promise<(Product & { signedImageUrl: string | null; brand: { brand_id: number; brand_name: string } })[]> => {
+    if (!keyword || keyword.trim() === '') {
+        return [];
+    }
+
+    const products = await prisma.product.findMany({
+        where: {
+            OR: [
+                { product_name: { contains: keyword, mode: 'insensitive' } },
+                { category: { contains: keyword, mode: 'insensitive' } },
+                { brand: { brand_name: { contains: keyword, mode: 'insensitive' } } },
+            ],
+        },
+        take: limit,
+        include: {
+            brand: {
+                select: {
+                    brand_id: true,
+                    brand_name: true,
+                },
+            },
+        },
+        orderBy: {
+            created_at: 'desc',
+        },
+    });
+
+    const productsWithUrls = await Promise.all(
+        products.map(async (product) => {
+            let signedImageUrl = null;
+            if (product.image_url) {
+                try {
+                    signedImageUrl = await getSignedUrl(product.image_url);
+                } catch (error) {
+                    console.error(`Signed URL 생성 실패 (ID: ${product.product_id}):`, error);
+                }
+            }
+            return {
+                ...product,
+                signedImageUrl: signedImageUrl,
+            };
+        })
+    );
+
+    return productsWithUrls;
+};

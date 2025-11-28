@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts } from '../controllers/productController.js'
+import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts, searchProducts } from '../controllers/productController.js'
 import { authenticateToken } from '../midwares/authMiddleware.js';
 const router = Router();
 
@@ -58,6 +58,7 @@ const router = Router();
  *                       nullable: true
  */
 router.get('/', getProductList);
+router.get('/search', searchProducts);
 
 /**
  * @swagger

@@ -175,3 +175,43 @@ export const fetchUserProducts = async (
     // 백엔드에서 받은 { products, nextCursor } 객체를 그대로 반환합니다.
     return response.json();
 };
+
+/**
+ * 키워드로 상품을 검색합니다.
+ * @param keyword 검색 키워드
+ * @param limit 최대 결과 개수
+ */
+export const searchProducts = async (keyword: string, limit: number = 20): Promise<{ data: ProductWithUrl[] }> => {
+    const params = new URLSearchParams({
+        keyword: keyword,
+        limit: String(limit),
+    });
+
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products/search?${params.toString()}`);
+
+    if (!response.ok) {
+        throw new Error('Failed to search products.');
+    }
+
+    return response.json();
+};
+
+/**
+ * 키워드로 브랜드를 검색합니다.
+ * @param keyword 검색 키워드
+ * @param limit 최대 결과 개수
+ */
+export const searchBrands = async (keyword: string, limit: number = 10): Promise<BrandApiResponse> => {
+    const params = new URLSearchParams({
+        keyword: keyword,
+        limit: String(limit),
+    });
+
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/brands/search?${params.toString()}`);
+
+    if (!response.ok) {
+        throw new Error('Failed to search brands.');
+    }
+
+    return response.json();
+};

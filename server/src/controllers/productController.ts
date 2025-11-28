@@ -166,3 +166,24 @@ export const getProductDownloadUrl = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message || 'Failed to generate download URL.' });
     }
 };
+
+/**
+ * 키워드로 상품을 검색합니다.
+ */
+export const searchProducts = async (req: Request, res: Response) => {
+    try {
+        const keyword = req.query.keyword as string;
+        const limit = parseInt(req.query.limit as string) || 20;
+
+        if (!keyword || keyword.trim() === '') {
+            return res.status(200).json({ data: [] });
+        }
+
+        const products = await productService.searchProducts(keyword.trim(), limit);
+
+        res.status(200).json({ data: products });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to search products.' });
+    }
+};

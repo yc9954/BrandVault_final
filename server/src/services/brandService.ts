@@ -50,3 +50,51 @@ export const fetchFeatureBrandList = async (): Promise<BrandWithUrl[]> => {
         throw new Error('Failed to fetch feature brand list.');
     }
 };
+
+/**
+ * 키워드로 브랜드를 검색하고 Signed URL을 생성하여 반환합니다.
+ */
+export const searchBrands = async (keyword: string, limit: number = 10): Promise<BrandWithUrl[]> => {
+    if (!keyword || keyword.trim() === '') {
+        return [];
+    }
+
+    try {
+        const brands = await prisma.brand.findMany({
+            where: {
+                brand_name: {
+                    contains: keyword,
+                    mode: 'insensitive',
+                },
+            },
+            take: limit,
+            orderBy: {
+                asset_count: 'desc',
+            },
+        });
+
+        const brandsWithUrls = await Promise.all(
+            brands.map(async (brand) => {
+                let signedLogoUrl: string | null = null;
+                
+                if (brand.logo_url) {
+                    try {
+                        signedLogoUrl = await getSignedUrl(brand.logo_url);
+                    } catch (error) {
+                        console.error(`Signed URL 생성 실패 (Brand ID: ${brand.brand_id}):`, error);
+                    }
+                }
+                
+                return {
+                    ...brand,
+                    signedLogoUrl: signedLogoUrl,
+                };
+            })
+        );
+
+        return brandsWithUrls;
+    } catch (error) {
+        console.error('Error searching brands:', error);
+        throw new Error('Failed to search brands.');
+    }
+};
