@@ -1,18 +1,27 @@
 import type { Request, Response} from 'express'
 import * as authService from '../services/authService.js'
+import passport from '../config/passport.js'
+
+// 쿠키 설정 헬퍼 함수
+const getCookieOptions = () => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttps = process.env.HTTPS === 'true' || isProduction;
+    
+    return {
+        httpOnly: true,
+        secure: isHttps, // HTTPS일 때만 secure 사용
+        maxAge: 3600000, // 1시간
+        sameSite: (isHttps ? 'none' : 'lax') as 'none' | 'lax' | 'strict', // HTTPS면 none, 아니면 lax
+        ...(process.env.COOKIE_DOMAIN && { domain: process.env.COOKIE_DOMAIN }), // 도메인은 환경변수로 설정
+    };
+};
 
 export const handleCreatorLogin = async(req: Request, res: Response) => {
     // const { email, password } = req.body;
     try {
         const token = await authService.loginCreator();
 
-        res.cookie('jwt', token, {
-            httpOnly: true, 
-            secure: true,
-            maxAge: 3600000, 
-            sameSite: 'none',
-            domain: 'brandvault.onrender.com'
-        });
+        res.cookie('jwt', token, getCookieOptions());
 
         res.status(200).json({message: '로그인 성공'});
     } catch (error: any) {
@@ -26,12 +35,7 @@ export const handleBrandLogin = async(req: Request, res: Response) => {
     try {
         const token = await authService.loginBrand();
 
-        res.cookie('jwt', token, {
-            httpOnly: true, 
-            secure: true,
-            maxAge: 3600000, 
-            sameSite: 'none'
-        });
+        res.cookie('jwt', token, getCookieOptions());
 
         res.status(200).json({message: '로그인 성공'});
     } catch (error: any) {
@@ -42,12 +46,44 @@ export const handleBrandLogin = async(req: Request, res: Response) => {
 
 export const handleLogout = (req: Request, res: Response) => {
     res.cookie('jwt', '', { 
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 0,
-        sameSite: 'lax',
+        ...getCookieOptions(),
+        maxAge: 0, // 즉시 만료
     });
+    // Passport 세션 로그아웃 (있는 경우)
+    if (req.logout) {
+        req.logout((err) => {
+            if (err) {
+                console.error('로그아웃 에러:', err);
+            }
+        });
+    }
     res.status(200).json({ message: '로그아웃 성공' });
+};
+
+/**
+ * Google OAuth 로그인 시작
+ */
+export const handleGoogleLogin = passport.authenticate('google', {
+    scope: ['profile', 'email'],
+});
+
+/**
+ * Google OAuth 콜백 처리
+ */
+export const handleGoogleCallback = (req: Request, res: Response) => {
+    passport.authenticate('google', { session: false }, (err: any, user: any) => {
+        if (err || !user) {
+            return res.redirect(
+                `${process.env.CLIENT_URL || 'http://localhost:3001'}/login?error=google_auth_failed`
+            );
+        }
+
+        // JWT 토큰을 쿠키에 설정
+        res.cookie('jwt', user.token, getCookieOptions());
+
+        // 프론트엔드로 리다이렉트
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3001'}/dashboard`);
+    })(req, res);
 };
 
 

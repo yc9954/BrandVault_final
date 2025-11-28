@@ -9,6 +9,9 @@ import SocialLoginButton from '../components/Button/ImageButton'
 import googlelogo from '../assets/images/google_logo.svg'
 import styles from './Hompage.module.css';
 
+// API URL 설정
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000');
+
 function HomePage() {
   const { goToCreator } = useCreatorNavigation();
   
@@ -31,6 +34,12 @@ function HomePage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Google OAuth 로그인 핸들러
+  const handleGoogleLogin = () => {
+    // 백엔드의 Google OAuth 엔드포인트로 리다이렉트
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
   
   return (
@@ -76,7 +85,7 @@ function HomePage() {
 
         <div className={styles.socialGroup}>
           <SocialLoginButton 
-            onClick={() => {}} 
+            onClick={handleGoogleLogin} 
             imageSrc={googlelogo} 
             altText='Google Login' 
           />
