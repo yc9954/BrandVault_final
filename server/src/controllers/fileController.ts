@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import * as FileService from '../services/fileService.js'; // 👈 서비스 임포트
+import * as FileService from '../services/fileService.js'; 
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 

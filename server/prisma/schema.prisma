@@ -246,9 +246,10 @@ model Data_Usage_Log {
 
 model Creator {
   creator_id         Int                @id @default(autoincrement())
+  user_name          String
   email              String             @unique
   password           String
-  user_name          String
+  subscription_type  String             @default("free") // free, pro, enterprise 중 하나
   created_at         DateTime           @default(now())
   purchased_products Product_Purchase[]
   Project            Project[]

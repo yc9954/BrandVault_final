@@ -10,9 +10,11 @@ import projectRoutes from './routes/projectRoutes.js';
 import fileRoutes from './routes/fileRoutese.js'
 import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
+import profileRoutes from './routes/profileRotues.js'
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { profile } from 'console';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -23,7 +25,6 @@ const __dirname = path.dirname(__filename);
 app.use(cors({
   credentials: true,
   origin: process.env.CLIENT_URL || 'http://localhost:3001',
-  
 })); 
 
 app.use(express.json());
@@ -32,13 +33,12 @@ app.use(cookieParser());
 // 정적 파일 서빙 (uploads, splats 디렉토리)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/splats', express.static(path.join(__dirname, '../splats')));
-
+app.use("/api/profile/", profileRoutes)
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/splat", splatRoutes);
 app.use('/api/brands', brandRoutes);
-
 app.use("/api/file", fileRoutes)
 
 app.listen(port, () => {
