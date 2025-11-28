@@ -3,14 +3,15 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { prisma } from '../db.js';
 import jwt from 'jsonwebtoken';
 
-// Google OAuth 전략 설정
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.API_URL || 'http://localhost:3000'}/api/auth/google/callback`,
-    },
+// Google OAuth 전략 설정 (환경 변수가 있을 때만 초기화)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.API_URL || 'http://localhost:3000'}/api/auth/google/callback`,
+      },
     async (accessToken, refreshToken, profile, done) => {
       try {
         // Google 프로필에서 정보 추출
@@ -57,7 +58,10 @@ passport.use(
       }
     }
   )
-);
+  );
+} else {
+  console.warn('Google OAuth credentials not found. Google login will be disabled.');
+}
 
 // JWT 기반이므로 세션 직렬화는 필요 없지만, Passport가 요구할 수 있으므로 추가
 passport.serializeUser((user: any, done) => {

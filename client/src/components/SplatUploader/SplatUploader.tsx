@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { uploadImagesAndConvert, getJobStatus, getSplatDownloadUrl } from '../../api/splatApi';
-import { loginCreator } from '../../api/authApi';
 import './SplatUploader.css';
 
 interface SplatUploaderProps {
@@ -16,19 +15,12 @@ function SplatUploader({ onUploadComplete }: SplatUploaderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 컴포넌트 마운트 시 자동 로그인 시도
+  // 컴포넌트 마운트 시 인증 상태 확인 (자동 로그인 제거)
+  // 사용자는 홈페이지에서 로그인해야 합니다
   useEffect(() => {
-    const ensureAuthenticated = async () => {
-      try {
-        await loginCreator();
-        setIsAuthenticated(true);
-        console.log('Creator 로그인 성공');
-      } catch (err: any) {
-        console.error('자동 로그인 실패:', err);
-        // 로그인 실패해도 업로드 시도는 가능 (401 오류 시 재로그인 시도)
-      }
-    };
-    ensureAuthenticated();
+    // 쿠키에 JWT가 있는지 확인 (간단한 체크)
+    // 실제로는 API 호출로 인증 상태를 확인할 수 있습니다
+    setIsAuthenticated(true); // 기본적으로 인증된 것으로 가정 (쿠키 기반)
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,17 +42,8 @@ function SplatUploader({ onUploadComplete }: SplatUploaderProps) {
     setError(null);
 
     try {
-      // 업로드 전 인증 확인 및 로그인 시도
-      if (!isAuthenticated) {
-        try {
-          await loginCreator();
-          setIsAuthenticated(true);
-          console.log('업로드 전 로그인 성공');
-        } catch (loginErr: any) {
-          console.error('로그인 실패:', loginErr);
-          // 계속 진행 (업로드에서 401 오류 시 재시도)
-        }
-      }
+      // 인증은 쿠키 기반이므로 별도 로그인 불필요
+      // 401 오류 발생 시 에러 처리에서 처리
 
       const response = await uploadImagesAndConvert(selectedFiles);
       setJobId(response.jobId);
@@ -77,17 +60,10 @@ function SplatUploader({ onUploadComplete }: SplatUploaderProps) {
       console.error('Upload error:', err);
       const errorMessage = err.response?.data?.message || err.message || '업로드 중 오류가 발생했습니다.';
       
-      // 인증 오류인 경우 로그인 재시도
+      // 인증 오류인 경우
       if (errorMessage.includes('인증') || errorMessage.includes('토큰') || err.response?.status === 401) {
         setIsAuthenticated(false);
-        try {
-          await loginCreator();
-          setIsAuthenticated(true);
-          setError('인증 오류가 발생했습니다. 다시 시도해주세요.');
-          console.log('재로그인 성공');
-        } catch (loginErr) {
-          setError('인증이 필요합니다. 페이지를 새로고침해주세요.');
-        }
+        setError('인증이 필요합니다. 홈페이지에서 로그인 후 다시 시도해주세요.');
       } else {
         setError(errorMessage);
       }

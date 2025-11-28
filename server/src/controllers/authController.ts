@@ -17,16 +17,26 @@ const getCookieOptions = () => {
 };
 
 export const handleCreatorLogin = async(req: Request, res: Response) => {
-    // const { email, password } = req.body;
+    const { email, password } = req.body;
+    
     try {
-        const token = await authService.loginCreator();
+        // 이메일과 비밀번호가 제공되었는지 확인
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: '이메일과 비밀번호를 입력해주세요.' 
+            });
+        }
+
+        const token = await authService.loginCreator({ email, password });
 
         res.cookie('jwt', token, getCookieOptions());
 
         res.status(200).json({message: '로그인 성공'});
     } catch (error: any) {
         console.error('로그인 에러:', error);
-        res.status(401).json({ mesasge: error.message || '로그인 중 오류 발생'});
+        res.status(401).json({ 
+            message: error.message || '로그인 중 오류 발생'
+        });
     }
 };
 
@@ -63,14 +73,29 @@ export const handleLogout = (req: Request, res: Response) => {
 /**
  * Google OAuth 로그인 시작
  */
-export const handleGoogleLogin = passport.authenticate('google', {
-    scope: ['profile', 'email'],
-});
+export const handleGoogleLogin = (req: Request, res: Response) => {
+    // Google OAuth가 설정되지 않은 경우
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.status(503).json({ 
+            message: 'Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.' 
+        });
+    }
+    return passport.authenticate('google', {
+        scope: ['profile', 'email'],
+    })(req, res);
+};
 
 /**
  * Google OAuth 콜백 처리
  */
 export const handleGoogleCallback = (req: Request, res: Response) => {
+    // Google OAuth가 설정되지 않은 경우
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.redirect(
+            `${process.env.CLIENT_URL || 'http://localhost:3001'}/login?error=google_auth_not_configured`
+        );
+    }
+    
     passport.authenticate('google', { session: false }, (err: any, user: any) => {
         if (err || !user) {
             return res.redirect(
