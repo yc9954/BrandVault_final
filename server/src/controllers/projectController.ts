@@ -1,9 +1,10 @@
-import type { Request, Response} from 'express'
+import type { Request, Response } from 'express'
 import * as projectService from '../services/projectService.js'
 
 export const handleGetUserProjects = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.userId;
+        const user = req.user as { userId?: number; brandId?: number } | undefined;
+        const userId = user?.userId;
         if (!userId) {
             return res.status(401).json({ message: '유저 id를 찾을 수 없습니다.'});
         }
@@ -16,7 +17,8 @@ export const handleGetUserProjects = async (req: Request, res: Response) => {
 
 export const handleCreateProject = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.userId;
+        const user = req.user as { userId?: number; brandId?: number } | undefined;
+        const userId = user?.userId;
         if (!userId) {
             return res.status(401).json({ message: '유저 id를 찾을 수 없습니다.'});
         }

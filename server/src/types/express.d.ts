@@ -1,6 +1,6 @@
-import { Request } from 'express'
+import 'express';
 
-interface JwtPayload {
+export interface JwtPayload {
     userId?: number;
     brandId?: number;
 }

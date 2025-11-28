@@ -5,7 +5,8 @@ import * as profileService from '../services/profileService.js';
  * Creator 프로필 데이터를 가져와 응답합니다.
  */
 export const fetchProfile = async (req: Request, res: Response): Promise<Response> => {
-  const creatorId = req.user?.userId; 
+  const user = req.user as { userId?: number; brandId?: number } | undefined;
+  const creatorId = user?.userId; 
 
   if (!creatorId) {
     // userId가 없으면 401 Unauthorized 응답

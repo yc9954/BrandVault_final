@@ -109,7 +109,8 @@ export const getProductDetails = async (req: Request, res: Response) => {
 export const handleGetUserProducts = async (req: Request, res: Response) => {
     try {
         // 1. 미들웨어에서 검증된 userId를 사용합니다.
-        const userId = req.user?.userId;
+        const user = req.user as { userId?: number; brandId?: number } | undefined;
+        const userId = user?.userId;
         if (!userId) {
             // 이 케이스는 보통 미들웨어에서 처리되지만, 방어 코드로 유지합니다.
             return res.status(401).json({ message: '인증 정보가 필요합니다.' });
