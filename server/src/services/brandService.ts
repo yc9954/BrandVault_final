@@ -98,3 +98,79 @@ export const searchBrands = async (keyword: string, limit: number = 10): Promise
         throw new Error('Failed to search brands.');
     }
 };
+
+/**
+ * 브랜드 ID로 브랜드 정보와 해당 브랜드의 에셋 목록을 조회합니다.
+ */
+export const fetchBrandById = async (brandId: number): Promise<{
+    brand: BrandWithUrl;
+    products: (import('@prisma/client').Product & { signedImageUrl: string | null; brand: { brand_id: number; brand_name: string } })[];
+}> => {
+    try {
+        // 1. 브랜드 정보 조회
+        const brand = await prisma.brand.findUnique({
+            where: { brand_id: brandId },
+        });
+
+        if (!brand) {
+            throw new Error('Brand not found');
+        }
+
+        // 2. 브랜드 로고 Signed URL 생성
+        let signedLogoUrl: string | null = null;
+        if (brand.logo_url) {
+            try {
+                signedLogoUrl = await getSignedUrl(brand.logo_url);
+            } catch (error) {
+                console.error(`Signed URL 생성 실패 (Brand ID: ${brand.brand_id}):`, error);
+            }
+        }
+
+        const brandWithUrl: BrandWithUrl = {
+            ...brand,
+            signedLogoUrl: signedLogoUrl,
+        };
+
+        // 3. 해당 브랜드의 에셋 목록 조회
+        const products = await prisma.product.findMany({
+            where: { brand_id: brandId },
+            include: {
+                brand: {
+                    select: {
+                        brand_id: true,
+                        brand_name: true,
+                    },
+                },
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
+        });
+
+        // 4. 에셋 이미지 Signed URL 생성
+        const productsWithUrls = await Promise.all(
+            products.map(async (product) => {
+                let signedImageUrl = null;
+                if (product.image_url) {
+                    try {
+                        signedImageUrl = await getSignedUrl(product.image_url);
+                    } catch (error) {
+                        console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
+                    }
+                }
+                return {
+                    ...product,
+                    signedImageUrl: signedImageUrl,
+                };
+            })
+        );
+
+        return {
+            brand: brandWithUrl,
+            products: productsWithUrls,
+        };
+    } catch (error) {
+        console.error('Error fetching brand by ID:', error);
+        throw error;
+    }
+};

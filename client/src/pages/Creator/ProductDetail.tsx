@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ProductDetail.module.css';
 // 💡 [수정] 다운로드 API 함수 임포트
 import { fetchProductById, fetchProductDownloadUrl } from '../../api/productApi';
@@ -11,6 +11,7 @@ type ProductDetailData = any;
 function ProductDetail() {
   // 1. URL에서 product ID 가져오기
   const { id } = useParams<{ id: string }>(); 
+  const navigate = useNavigate();
   
   const [product, setProduct] = useState<ProductDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +19,11 @@ function ProductDetail() {
   
   // 💡 [신규] 다운로드 버튼 로딩 상태
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // 뒤로가기 핸들러
+  const handleGoBack = () => {
+    navigate(-1); // 브라우저 히스토리의 이전 페이지로 이동
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -82,8 +88,13 @@ function ProductDetail() {
   // -------------------------
   return (
     <div className={styles.pageContainer}>
-      {/* 💡 뒤로가기 버튼 (CreatorPage의 메인 라이브러리 경로로 수정) */}
-      <Link to="/creator" className={styles.backButton}>← 뒤로가기</Link>
+      {/* 💡 뒤로가기 버튼 (이전 페이지로 이동) */}
+      <button onClick={handleGoBack} className={styles.backButton}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>뒤로가기</span>
+      </button>
       
       <div className={styles.detailLayout}>
         

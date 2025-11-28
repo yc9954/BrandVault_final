@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 // 💡 Service 함수 임포트
-import { fetchFeatureBrandList, searchBrands } from '../services/brandService.js'; 
+import { fetchFeatureBrandList, searchBrands, fetchBrandById } from '../services/brandService.js'; 
 
 /**
  * Featured Brand 목록을 반환하는 Controller 함수.
@@ -43,5 +43,30 @@ export const searchBrandsController = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error searching brands:', error);
         res.status(500).json({ message: (error as Error).message || 'Failed to search brands.' });
+    }
+};
+
+/**
+ * 브랜드 ID로 브랜드 정보와 에셋 목록을 조회합니다.
+ */
+export const getBrandById = async (req: Request, res: Response) => {
+    try {
+        const brandId = parseInt(req.params.id as string);
+        
+        if (isNaN(brandId)) {
+            return res.status(400).json({ message: 'Invalid brand ID.' });
+        }
+
+        const result = await fetchBrandById(brandId);
+
+        res.status(200).json({ data: result });
+    } catch (error) {
+        const message = (error as Error).message;
+        if (message.includes('Brand not found')) {
+            return res.status(404).json({ message });
+        }
+        
+        console.error('Error fetching brand by ID:', error);
+        res.status(500).json({ message: 'Failed to fetch brand details.' });
     }
 };

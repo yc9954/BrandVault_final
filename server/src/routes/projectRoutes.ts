@@ -29,5 +29,6 @@ const router = Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/', authenticateToken, projectController.handleGetUserProjects)
+router.post('/', authenticateToken, projectController.handleCreateProject)
 
 export default router;

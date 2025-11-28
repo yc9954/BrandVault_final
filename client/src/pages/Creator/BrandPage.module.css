@@ -1,0 +1,206 @@
+/*
+ * BrandPage.module.css
+ * 브랜드 상세 페이지 스타일
+ */
+
+.container {
+  margin: 0;
+  margin-left: -3rem;
+  margin-right: -3rem;
+  background-color: white;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding: 0 3rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #7a7a7a;
+  font-size: 1.1rem;
+}
+
+.error {
+  text-align: center;
+  color: #ff3860;
+  font-size: 1.25rem;
+  padding: 3rem;
+  background-color: #fff0f0;
+  border-radius: 12px;
+  border: 1px solid #ff3860;
+  margin: 2rem 0;
+}
+
+/* 브랜드 헤더 */
+.brandHeader {
+  padding: 2rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+.brandInfo {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.brandLogo {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 12px;
+  background-color: #f8f8f8;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+}
+
+.brandDetails {
+  /* flex: 1 제거 */
+}
+
+.brandName {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.brandStats {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #7a7a7a;
+}
+
+/* 에셋 목록 섹션 */
+.productsSection {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #9F54FF;
+}
+
+.noProducts {
+  text-align: center;
+  color: #7a7a7a;
+  padding: 3rem;
+  font-size: 1.1rem;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+.productGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.productCard {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardImagePlaceholder {
+  height: 200px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+  position: relative;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardContent {
+  padding: 1rem;
+}
+
+.cardContent h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  color: #1a1a1a;
+}
+
+.cardSponsor {
+  font-size: 0.875rem;
+  color: #7a7a7a;
+  margin: 0 0 1rem 0;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background-color: #f0f0f0;
+  color: #555;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.tagPrice {
+  background-color: #9F54FF;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  .brandInfo {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .brandLogo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .brandName {
+    font-size: 2rem;
+  }
+
+  .productGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

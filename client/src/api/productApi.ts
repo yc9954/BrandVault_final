@@ -215,3 +215,88 @@ export const searchBrands = async (keyword: string, limit: number = 10): Promise
 
     return response.json();
 };
+
+/**
+ * 브랜드 ID로 브랜드 정보와 에셋 목록을 조회합니다.
+ * @param brandId 브랜드 ID
+ */
+export interface BrandDetailResponse {
+    data: {
+        brand: BrandWithUrl;
+        products: ProductWithUrl[];
+    };
+}
+
+export const fetchBrandById = async (brandId: number): Promise<BrandDetailResponse> => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/brands/${brandId}`);
+
+    if (!response.ok) {
+        if (response.status === 404) {
+            throw new Error('Brand not found.');
+        }
+        throw new Error('Failed to fetch brand details.');
+    }
+
+    return response.json();
+};
+
+/**
+ * 프로젝트 생성
+ */
+export interface CreateProjectRequest {
+    projectName: string;
+    videoPath: string;
+    productIds: number[];
+}
+
+export interface CreateProjectResponse {
+    data: {
+        project_id: number;
+        project_name: string;
+        video_path?: string;
+        thumbnail_url?: string;
+        created_at: string;
+    };
+}
+
+export const createProject = async (data: CreateProjectRequest): Promise<CreateProjectResponse> => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '프로젝트 생성에 실패했습니다.');
+    }
+
+    return response.json();
+};
+
+/**
+ * 사용자 프로젝트 목록 조회
+ */
+export interface UserProject {
+    project_id: number;
+    project_name: string;
+    description?: string;
+    created_at: string;
+    thumbnail_url?: string;
+    products_used: any[];
+}
+
+export const fetchUserProjects = async (): Promise<UserProject[]> => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects`, {
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error('프로젝트 목록을 불러오는데 실패했습니다.');
+    }
+
+    return response.json();
+};

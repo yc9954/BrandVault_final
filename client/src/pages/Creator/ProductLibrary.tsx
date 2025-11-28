@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './ProductLibrary.module.css';
 
 // 💡 필요한 API 함수들 (이미 구현되었다고 가정)
@@ -25,6 +25,8 @@ const PAGE_SIZE = 20;
 
 
 function ProductLibrary() {
+  const navigate = useNavigate();
+  
   // 5행 추천 에셋 목록 상태 (무한 스크롤)
   const [products, setProducts] = useState<ProductWithUrl[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -200,7 +202,10 @@ function ProductLibrary() {
             <h2 className={styles.title}>Product Library</h2>
             <p className={styles.subtitle}>Browse and favorite products for your next video project</p>
           </div>
-          <button className={styles.createButton}>
+          <button 
+            className={styles.createButton}
+            onClick={() => navigate('/creator/project/create')}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
               <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
             </svg>
@@ -238,7 +243,7 @@ function ProductLibrary() {
               ) : (
                 <div className={styles.horizontalScrollContainer}>
                   {searchResults.brands.map((brand) => (
-                    <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
+                    <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
                       <div className={styles.bannerContent}>
                         <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
                         <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count}</p>
@@ -302,7 +307,7 @@ function ProductLibrary() {
         {isInitialLoading ? <div className={styles.wideBannerLoading}>배너 로딩 중...</div> : wideBanners.length > 0 && (
           <div className={`${styles.horizontalScrollContainer} ${styles.wideBannerScroll}`}>
             {wideBanners.map((brand) => (
-              <Link key={brand.brand_id} to={`/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
+              <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
                 <div className={styles.bannerContent}>
                   <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
                   <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count} </p>

@@ -1,18 +1,47 @@
 /* ProductDetail.module.css (Light Mode) */
 
 .pageContainer {
-  padding: 2rem 3rem;
+  padding: 0rem 3rem;
   background-color: #ffffff; /* 💡 라이트 모드 배경 */
   color: #1a1a1a; /* 💡 라이트 모드 텍스트 */
   min-height: 100vh;
 }
 
 .backButton {
-  color: #555; /* 💡 어두운 텍스트 색상 */
-  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
   margin-bottom: 2rem;
-  display: inline-block;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.backButton:hover {
+  background-color: #f8f8f8;
+  border-color: #9F54FF;
+  color: #9F54FF;
+  transform: translateX(-2px);
+  box-shadow: 0 2px 6px rgba(159, 84, 255, 0.15);
+}
+
+.backButton:active {
+  transform: translateX(-1px);
+}
+
+.backButton svg {
+  transition: transform 0.2s ease;
+}
+
+.backButton:hover svg {
+  transform: translateX(-2px);
 }
 
 .detailLayout {

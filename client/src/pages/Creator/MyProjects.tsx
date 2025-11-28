@@ -1,107 +1,217 @@
-// --- START OF FILE pages/MyProjects.tsx (ProductLibrary 패턴 적용) ---
+// --- START OF FILE pages/MyProjects.tsx (프로젝트 목록 표시) ---
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { fetchUserProducts } from '../../api/productApi';
-import ProductCard from '../../components/ProductCard';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchUserProjects } from '../../api/productApi';
 import styles from './MyProjects.module.css';
 
-type Product = {
-    purchaseId: number;
-    productId: number;
-    productName: string;
-    brandName: string;
-    signedImageUrl: string | null;
-    viewCount: number;
-    downloadCount: number;
+type Project = {
+    project_id: number;
+    project_name: string;
+    description?: string;
+    created_at: string;
+    thumbnail_url?: string;
+    products_used: any[];
 };
 
-const PAGE_SIZE = 9; // 한 번에 불러올 개수
-
 function MyProjects() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [nextCursor, setNextCursor] = useState<number | null>(null);
-    const [hasMore, setHasMore] = useState(true);
-
-    // 1. ProductLibrary처럼 로딩 상태를 분리합니다.
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // 2. "더 불러오기" 전용 함수입니다.
-    const loadMoreProducts = useCallback(async () => {
-        if (isFetchingMore || !hasMore) return;
+    useEffect(() => {
+        const loadProjects = async () => {
+            try {
+                setIsLoading(true);
+                const data = await fetchUserProjects();
+                setProjects(data);
+            } catch (err) {
+                setError('프로젝트 목록을 불러오는 데 실패했습니다.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        setIsFetchingMore(true);
+        loadProjects();
+    }, []);
+
+    // 썸네일 URL 생성 (GCS Signed URL)
+    const getThumbnailUrl = async (thumbnailPath: string | null | undefined): Promise<string | null> => {
+        if (!thumbnailPath) return null;
+        
         try {
-            const data = await fetchUserProducts(PAGE_SIZE, nextCursor);
-            setProducts(prev => [...prev, ...data.products]);
-            setNextCursor(data.nextCursor);
-            if (data.nextCursor === null) {
-                setHasMore(false);
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/file/url?filePath=${encodeURIComponent(thumbnailPath)}`,
+                { credentials: 'include' }
+            );
+            if (response.ok) {
+                const data = await response.json();
+                return data.temporaryUrl;
             }
         } catch (err) {
-            setError('데이터를 불러오는 데 실패했습니다.');
-        } finally {
-            setIsFetchingMore(false);
+            console.error('썸네일 URL 생성 실패:', err);
         }
-    }, [isFetchingMore, hasMore, nextCursor]);
+        return null;
+    };
 
-    // 3. "초기 데이터 로딩"을 위한 useEffect입니다. (ProductLibrary 패턴)
-    useEffect(() => {
-        const initialLoad = async () => {
-            setIsInitialLoading(true);
-            try {
-                // 커서 없이 첫 페이지를 요청합니다.
-                const data = await fetchUserProducts(PAGE_SIZE, null);
-                setProducts(data.products);
-                setNextCursor(data.nextCursor);
-                if (data.nextCursor === null) {
-                    setHasMore(false);
-                }
-            } catch (err) {
-                setError('초기 데이터를 불러오는 데 실패했습니다.');
-            } finally {
-                setIsInitialLoading(false);
-            }
-        };
-
-        initialLoad();
-    }, []); // 의존성 배열이 비어있어 최초 1회만 실행됩니다.
-
-    // 4. "스크롤 이벤트"를 감지하는 useEffect입니다. (ProductLibrary 패턴)
-    useEffect(() => {
-        const handleScroll = () => {
-            // 로딩 중이 아닐 때, 더 불러올 데이터가 있을 때, 스크롤이 하단에 근접했을 때
-            if (!isFetchingMore && hasMore && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
-                loadMoreProducts();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [isFetchingMore, hasMore, loadMoreProducts]);
-
-
-    if (error) { return <div className={styles.container}><p>{error}</p></div>; }
+    if (error) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.error}>{error}</div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>컬렉션</h1>
-            <p className={styles.subtitle}>내가 구매한 에셋 목록입니다.</p>
+            <div className={styles.header}>
+                <div>
+                    <h1 className={styles.title}>내 프로젝트</h1>
+                    <p className={styles.subtitle}>제작한 프로젝트 목록입니다.</p>
+                </div>
+                <Link to="/creator/project/create" className={styles.createButton}>
+                    <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
+                        <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
+                    </svg>
+                    새 프로젝트
+                </Link>
+            </div>
             
-            {isInitialLoading ? (
-                <div className={styles.loader}>초기 데이터를 불러오는 중...</div>
+            {isLoading ? (
+                <div className={styles.loader}>프로젝트 목록을 불러오는 중...</div>
+            ) : projects.length === 0 ? (
+                <div className={styles.emptyMessage}>
+                    <p>아직 생성된 프로젝트가 없습니다.</p>
+                    <Link to="/creator/project/create" className={styles.createLink}>
+                        새 프로젝트 만들기
+                    </Link>
+                </div>
             ) : (
                 <div className={styles.grid}>
-                    {products.map(product => (
-                        <ProductCard key={product.purchaseId} product={product} />
+                    {projects.map(project => (
+                        <ProjectCard key={project.project_id} project={project} />
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
 
-            <div className={styles.loader}>
-                {isFetchingMore && <p>불러오는 중...</p>}
-                {!hasMore && products.length > 0}
+// 프로젝트 카드 컴포넌트
+function ProjectCard({ project }: { project: Project }) {
+    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+    const [showTooltip, setShowTooltip] = useState(false);
+    
+    // 에셋 개수에 따른 그리드 컬럼 수 계산
+    const getGridColumns = (count: number) => {
+        if (count === 1) return 1;
+        if (count === 2) return 2;
+        return 3;
+    };
+    
+    const gridColumns = project.products_used ? getGridColumns(project.products_used.length) : 3;
+
+    useEffect(() => {
+        const loadThumbnail = async () => {
+            if (project.thumbnail_url) {
+                try {
+                    const response = await fetch(
+                        `${process.env.REACT_APP_API_URL}/api/file/url?filePath=${encodeURIComponent(project.thumbnail_url)}`,
+                        { credentials: 'include' }
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        setThumbnailUrl(data.temporaryUrl);
+                    }
+                } catch (err) {
+                    console.error('썸네일 로드 실패:', err);
+                }
+            }
+        };
+        loadThumbnail();
+    }, [project.thumbnail_url]);
+
+    const formattedDate = new Date(project.created_at).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    return (
+        <div className={styles.projectCard}>
+            <div className={styles.thumbnail}>
+                {thumbnailUrl ? (
+                    <video src={thumbnailUrl} className={styles.thumbnailVideo} muted />
+                ) : (
+                    <div className={styles.thumbnailPlaceholder}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                )}
+            </div>
+            <div className={styles.projectInfo}>
+                <h3 className={styles.projectName}>{project.project_name}</h3>
+                <p className={styles.projectDate}>{formattedDate}</p>
+                {project.products_used && project.products_used.length > 0 && (
+                    <div 
+                        className={styles.projectAssetsContainer}
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                    >
+                        <p className={styles.projectAssets}>
+                            사용된 에셋: {project.products_used.length}개
+                        </p>
+                        {showTooltip && (
+                            <div 
+                                className={styles.tooltip}
+                                style={{ '--grid-columns': gridColumns } as React.CSSProperties}
+                                onMouseEnter={() => setShowTooltip(true)}
+                                onMouseLeave={() => setShowTooltip(false)}
+                            >
+                                <div className={styles.tooltipContent}>
+                                    <div className={styles.tooltipList}>
+                                        {project.products_used.map((product: any) => (
+                                            <Link
+                                                key={product.product_id}
+                                                to={`/creator/product/${product.product_id}`}
+                                                className={styles.tooltipItem}
+                                            >
+                                                {product.signedImageUrl ? (
+                                                    <img 
+                                                        src={product.signedImageUrl} 
+                                                        alt={product.product_name || `에셋 #${product.product_id}`}
+                                                        className={styles.tooltipImage}
+                                                    />
+                                                ) : (
+                                                    <div className={styles.tooltipImagePlaceholder}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <path d="M6 42V6h36v36Zm3-3h30V9H9Zm0 0V9v30Zm4.2-4.1h21.6l-6.6-8.8-5.7 7.6-3.9-5.2Z"/>
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                                <div className={styles.tooltipHoverInfo}>
+                                                    <div className={styles.tooltipProductName}>
+                                                        {product.product_name || `에셋 #${product.product_id}`}
+                                                    </div>
+                                                    {product.brand && (
+                                                        <div className={styles.tooltipBrandName}>
+                                                            {product.brand.brand_name}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

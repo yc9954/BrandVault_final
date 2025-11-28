@@ -1,0 +1,457 @@
+/*
+ * CreateProject.module.css
+ * 프로젝트 생성 페이지 스타일
+ */
+
+.container {
+  margin: 0;
+  margin-left: -3rem;
+  margin-right: -3rem;
+  background-color: white;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding: 0 3rem;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.backButton:hover {
+  background-color: #f8f8f8;
+  border-color: #9F54FF;
+  color: #9F54FF;
+  transform: translateX(-2px);
+}
+
+.error {
+  background-color: #fff0f0;
+  color: #ff3860;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ff3860;
+  margin-bottom: 2rem;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #9F54FF;
+}
+
+/* 동영상 업로드 영역 */
+.videoUploadArea {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 2rem;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.videoUploadArea:hover {
+  border-color: #9F54FF;
+  background-color: #f8f8ff;
+}
+
+.uploadLabel {
+  display: block;
+  cursor: pointer;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadPlaceholder {
+  text-align: center;
+  padding: 3rem;
+  color: #7a7a7a;
+}
+
+.uploadPlaceholder svg {
+  margin-bottom: 1rem;
+  color: #9F54FF;
+}
+
+.uploadPlaceholder p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.videoPreview {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.videoPlayer {
+  width: 100%;
+  border-radius: 12px;
+  background-color: #000;
+}
+
+.removeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  background-color: #fff;
+  border-color: #ff3860;
+  color: #ff3860;
+}
+
+/* 에셋 선택 그리드 */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.productCard {
+  position: relative;
+  background-color: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #9F54FF;
+}
+
+.productCard.selected {
+  border-color: #9F54FF;
+  background-color: #f8f8ff;
+}
+
+.productImage {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+.productInfo {
+  padding: 1rem;
+}
+
+.productName {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.productBrand {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #7a7a7a;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  background-color: #9F54FF;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #7a7a7a;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 3rem;
+  color: #7a7a7a;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+}
+
+.emptyMessage a {
+  color: #9F54FF;
+  text-decoration: none;
+}
+
+.emptyMessage a:hover {
+  text-decoration: underline;
+}
+
+/* 액션 바 */
+.actionBar {
+  background-color: white;
+  padding: 1.5rem 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.createButton {
+  padding: 1rem 3rem;
+  background-color: #9F54FF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(159, 84, 255, 0.3);
+}
+
+.createButton:hover:not(:disabled) {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.4);
+}
+
+.createButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 완료 화면 */
+.completeContainer {
+  max-width: 600px;
+  margin: 4rem auto;
+  text-align: center;
+  padding: 3rem;
+  background-color: #f8f8ff;
+  border-radius: 16px;
+  border: 2px solid #9F54FF;
+}
+
+.completeIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  background-color: #9F54FF;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.completeTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 1rem 0;
+}
+
+.completeMessage {
+  font-size: 1.1rem;
+  color: #7a7a7a;
+  margin: 0 0 2rem 0;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.downloadButton {
+  padding: 1rem 2rem;
+  background-color: #9F54FF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.downloadButton:hover {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.4);
+}
+
+/* 에러 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.modalCloseButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #7a7a7a;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.modalCloseButton:hover {
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+}
+
+.modalBody {
+  padding: 1.5rem;
+  color: #1a1a1a;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.modalFooter {
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modalButton {
+  padding: 0.75rem 2rem;
+  background-color: #9F54FF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modalButton:hover {
+  background-color: #8e44ad;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(159, 84, 255, 0.3);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+}
+

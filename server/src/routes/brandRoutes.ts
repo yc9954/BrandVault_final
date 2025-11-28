@@ -1,6 +1,6 @@
 import { Router } from 'express';
 // 💡 Controller 함수 임포트
-import { getFeatureBrandList, searchBrandsController } from '../controllers/brandController.js';
+import { getFeatureBrandList, searchBrandsController, getBrandById } from '../controllers/brandController.js';
 
 const router = Router();
 
@@ -22,5 +22,6 @@ const router = Router();
  */
 router.get('/featured', getFeatureBrandList);
 router.get('/search', searchBrandsController);
+router.get('/:id', getBrandById);
 
 export default router;

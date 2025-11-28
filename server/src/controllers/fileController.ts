@@ -30,9 +30,19 @@ export const handleFileUpload = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
+    console.error('File upload error:', error);
     let errorMessage = "업로드 중 서버 오류 발생";
-    if (error instanceof Error) errorMessage = error.message;
-    res.status(500).send(errorMessage);
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Multer 에러 처리
+      if (error.name === 'MulterError') {
+        if (error.message.includes('File too large')) {
+          return res.status(400).json({ message: '파일 크기가 너무 큽니다. (최대 500MB)' });
+        }
+        return res.status(400).json({ message: `파일 업로드 오류: ${error.message}` });
+      }
+    }
+    res.status(500).json({ message: errorMessage });
   }
 };
 
