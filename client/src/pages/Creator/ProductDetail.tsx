@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ProductDetail.module.css';
 // 💡 [수정] 다운로드 API 함수 임포트
-import { fetchProductById, fetchProductDownloadUrl } from '../../api/productApi';
+import { fetchProductById, fetchProductDownloadUrl, fetchBrandById } from '../../api/productApi';
+import BrandHeader from '../../components/BrandHeader/BrandHeader';
 
 // 💡 API 응답 타입 정의 (가정)
 // 백엔드 API 응답과 일치해야 합니다.
@@ -16,14 +17,10 @@ function ProductDetail() {
   const [product, setProduct] = useState<ProductDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [brandAssetCount, setBrandAssetCount] = useState<number | null>(null);
   
   // 💡 [신규] 다운로드 버튼 로딩 상태
   const [isDownloading, setIsDownloading] = useState(false);
-
-  // 뒤로가기 핸들러
-  const handleGoBack = () => {
-    navigate(-1); // 브라우저 히스토리의 이전 페이지로 이동
-  };
 
   useEffect(() => {
     if (!id) return;
@@ -34,6 +31,17 @@ function ProductDetail() {
         // 💡 id가 string일 수 있으므로 parseInt로 변환
         const response = await fetchProductById(parseInt(id)); 
         setProduct(response.data);
+        
+        // 브랜드 정보 로드 (asset_count 포함)
+        const brandId = response.data.brand_id || response.data.brand?.brand_id;
+        if (brandId) {
+          try {
+            const brandResponse = await fetchBrandById(brandId);
+            setBrandAssetCount(brandResponse.data.brand.asset_count || brandResponse.data.products.length);
+          } catch (err) {
+            console.error('브랜드 정보 로드 실패:', err);
+          }
+        }
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -92,13 +100,15 @@ function ProductDetail() {
   // -------------------------
   return (
     <div className={styles.pageContainer}>
-      {/* 💡 뒤로가기 버튼 (이전 페이지로 이동) */}
-      <button onClick={handleGoBack} className={styles.backButton}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        <span>뒤로가기</span>
-      </button>
+      {/* 브랜드 헤더 섹션 */}
+      {product.brand && (product.brand_id || product.brand.brand_id) && (
+        <BrandHeader
+          brandId={product.brand_id || product.brand.brand_id}
+          brandName={product.brand.brand_name}
+          brandLogoUrl={product.brand.signedLogoUrl}
+          assetCount={brandAssetCount}
+        />
+      )}
       
       <div className={styles.detailLayout}>
         

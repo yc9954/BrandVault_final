@@ -51,7 +51,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 1rem;
 }
 
 .videoSection {
@@ -68,12 +68,12 @@
 }
 
 .videoContainer {
-  width: 100%;
-  max-width: 100%;
+  width: 1200px;
+  height: 670px;
+  margin: 0 auto;
   background-color: #000;
   border-radius: 12px;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
 }
 
 .videoPlayer {

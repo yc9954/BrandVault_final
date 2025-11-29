@@ -245,8 +245,9 @@ export const fetchBrandById = async (brandId: number): Promise<BrandDetailRespon
  */
 export interface CreateProjectRequest {
     projectName: string;
-    videoPath: string;
+    videoPath: string | null;
     productIds: number[];
+    status?: 'pending' | 'processing' | 'completed' | 'failed';
 }
 
 export interface CreateProjectResponse {

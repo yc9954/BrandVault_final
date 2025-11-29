@@ -23,13 +23,15 @@ export const handleCreateProject = async (req: Request, res: Response) => {
             return res.status(401).json({ message: '유저 id를 찾을 수 없습니다.'});
         }
 
-        const { projectName, videoPath, productIds } = req.body;
+        const { projectName, videoPath, productIds, status } = req.body;
 
-        if (!projectName || !videoPath || !productIds || !Array.isArray(productIds) || productIds.length === 0) {
-            return res.status(400).json({ message: '프로젝트 이름, 동영상 경로, 에셋 ID 목록이 필요합니다.'});
+        if (!projectName || !productIds || !Array.isArray(productIds) || productIds.length === 0) {
+            return res.status(400).json({ message: '프로젝트 이름, 에셋 ID 목록이 필요합니다.'});
         }
 
-        const project = await projectService.createProject(userId, projectName, videoPath, productIds);
+        // status가 없으면 기본값 'completed', 있으면 그대로 사용
+        const projectStatus = status || 'completed';
+        const project = await projectService.createProject(userId, projectName, videoPath || null, productIds, projectStatus);
         res.status(201).json({ data: project });
     } catch(error) {
         console.error('프로젝트 생성 에러:', error);

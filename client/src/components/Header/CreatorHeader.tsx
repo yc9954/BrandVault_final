@@ -49,6 +49,10 @@ function CreatorHeader() {
             if (matchPattern && location.pathname.startsWith(matchPattern)) {
                 isActiveState = true;
             }
+            // 탐색 페이지의 경우 브랜드 상세 페이지도 활성화
+            if (name === 'product' && (location.pathname.startsWith('/creator/product/') || location.pathname.startsWith('/creator/brand/'))) {
+                isActiveState = true;
+            }
             return `${styles.navButton} ${isActiveState ? styles.active : ''}`;
         };
 
@@ -82,7 +86,7 @@ function CreatorHeader() {
                          여기서는 /creator, /creator/projects 등 절대 경로를 사용합니다.
                          index route(탐색)에 end={true}를 추가합니다.
                     */}
-                    {renderNavButton('product', '탐색', '/creator', true)}
+                    {renderNavButton('product', '탐색', '/creator', true, '/creator/product')}
                     {renderNavButton('projects', '내 프로젝트', '/creator/projects', false, '/creator/project')}
                     {renderNavButton('dashboard', '대시보드', '/creator/dashboard')}
                     {renderNavButton('earnings', '수익', '/creator/earnings')}

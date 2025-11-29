@@ -64,14 +64,17 @@ export const getUserProjects = async (userId: number) => {
 export const createProject = async (
     userId: number,
     projectName: string,
-    videoPath: string,
-    productIds: number[]
+    videoPath: string | null,
+    productIds: number[],
+    status: 'pending' | 'processing' | 'completed' | 'failed' = 'completed'
 ) => {
     const project = await prisma.project.create({
         data: {
             project_name: projectName,
             creator_id: userId,
             thumbnail_url: videoPath, // 임시로 동영상 경로를 썸네일로 사용
+            status: status,
+            progress: status === 'processing' ? 0 : 100,
             products_used: {
                 connect: productIds.map(id => ({ product_id: id }))
             }

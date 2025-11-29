@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from './BrandPage.module.css';
 import { fetchBrandById } from '../../api/productApi';
+import BrandHeader from '../../components/BrandHeader/BrandHeader';
 
 type BrandWithUrl = any & { signedLogoUrl: string | null };
 type ProductWithUrl = any & { signedImageUrl: string | null; brand: { brand_id: number; brand_name: string } };
@@ -62,27 +63,15 @@ function BrandPage() {
   return (
     <div className={styles.container}>
       {/* 브랜드 헤더 섹션 */}
-      <div className={styles.brandHeader}>
-        <div className={styles.brandInfo}>
-          {brand.signedLogoUrl && (
-            <img 
-              src={brand.signedLogoUrl} 
-              alt={brand.brand_name} 
-              className={styles.brandLogo}
-            />
-          )}
-          <div className={styles.brandDetails}>
-            <h1 className={styles.brandName}>{brand.brand_name}</h1>
-            <p className={styles.brandStats}>
-              등록된 에셋: {brand.asset_count || products.length}개
-            </p>
-          </div>
-        </div>
-      </div>
+      <BrandHeader
+        brandId={brand.brand_id}
+        brandName={brand.brand_name}
+        brandLogoUrl={brand.signedLogoUrl}
+        assetCount={brand.asset_count || products.length}
+      />
 
       {/* 에셋 목록 섹션 */}
       <section className={styles.productsSection}>
-        <h2 className={styles.sectionTitle}>에셋 목록</h2>
         {products.length === 0 ? (
           <p className={styles.noProducts}>이 브랜드의 에셋이 없습니다.</p>
         ) : (

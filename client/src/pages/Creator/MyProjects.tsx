@@ -1,8 +1,9 @@
 // --- START OF FILE pages/MyProjects.tsx (프로젝트 목록 표시) ---
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchUserProjects } from '../../api/productApi';
+import { getVideoInsertionStatus } from '../../api/videoInsertApi';
 import styles from './MyProjects.module.css';
 
 type Project = {
@@ -11,6 +12,9 @@ type Project = {
     description?: string;
     created_at: string;
     thumbnail_url?: string;
+    status?: string;
+    progress?: number;
+    job_id?: string;
     products_used: any[];
 };
 
@@ -34,6 +38,79 @@ function MyProjects() {
 
         loadProjects();
     }, []);
+
+    // 진행중인 프로젝트의 job_id 목록 추출
+    const processingJobIds = useMemo(() => {
+        return projects
+            .filter(p => p.status === 'processing' && p.job_id)
+            .map(p => p.job_id)
+            .filter((id): id is string => !!id)
+            .sort()
+            .join(',');
+    }, [projects.map(p => `${p.project_id}-${p.job_id}`).join(',')]);
+
+    // 진행중인 프로젝트의 진행률 실시간 업데이트
+    useEffect(() => {
+        if (!processingJobIds) return;
+
+        const jobIdList = processingJobIds.split(',').filter(id => id);
+        if (jobIdList.length === 0) return;
+
+        const updateProgress = async () => {
+            // 현재 projects 상태에서 진행중인 프로젝트 찾기
+            setProjects(prevProjects => {
+                const processingProjects = prevProjects.filter(
+                    p => p.status === 'processing' && p.job_id && jobIdList.includes(p.job_id)
+                );
+
+                if (processingProjects.length === 0) return prevProjects;
+
+                // 각 진행중인 프로젝트의 상태 조회 (비동기로 실행하되 결과는 별도로 처리)
+                Promise.all(
+                    processingProjects.map(async (project) => {
+                        if (!project.job_id) return null;
+                        try {
+                            const status = await getVideoInsertionStatus(project.job_id);
+                            return {
+                                project_id: project.project_id,
+                                progress: status.progress,
+                                status: status.status,
+                            };
+                        } catch (err) {
+                            console.error(`프로젝트 ${project.project_id} 진행률 조회 실패:`, err);
+                            return null;
+                        }
+                    })
+                ).then(updates => {
+                    setProjects(prevProjects => 
+                        prevProjects.map(project => {
+                            const update = updates.find(u => u && u.project_id === project.project_id);
+                            if (update) {
+                                return {
+                                    ...project,
+                                    progress: update.progress,
+                                    status: update.status,
+                                };
+                            }
+                            return project;
+                        })
+                    );
+                }).catch(err => {
+                    console.error('진행률 업데이트 실패:', err);
+                });
+
+                return prevProjects;
+            });
+        };
+
+        // 즉시 한 번 실행
+        updateProgress();
+
+        // 2초마다 업데이트
+        const interval = setInterval(updateProgress, 2000);
+
+        return () => clearInterval(interval);
+    }, [processingJobIds]);
 
     // 썸네일 URL 생성 (GCS Signed URL)
     const getThumbnailUrl = async (thumbnailPath: string | null | undefined): Promise<string | null> => {
@@ -90,11 +167,13 @@ function MyProjects() {
                     </Link>
                 </div>
             ) : (
-                <div className={styles.grid}>
-                    {projects.map(project => (
-                        <ProjectCard key={project.project_id} project={project} />
-                    ))}
-                </div>
+                <section className={styles.section}>
+                    <div className={styles.grid}>
+                        {projects.map(project => (
+                            <ProjectCard key={project.project_id} project={project} />
+                        ))}
+                    </div>
+                </section>
             )}
         </div>
     );
@@ -140,8 +219,13 @@ function ProjectCard({ project }: { project: Project }) {
         day: 'numeric'
     });
 
+    // 진행중인 프로젝트는 진행 상황 페이지로, 완료된 프로젝트는 상세 페이지로
+    const projectLink = project.status === 'processing' && project.job_id
+        ? `/creator/project/${project.project_id}/progress?jobId=${project.job_id}`
+        : `/creator/project/${project.project_id}`;
+
     return (
-        <Link to={`/creator/project/${project.project_id}`} className={styles.projectCardLink}>
+        <Link to={projectLink} className={styles.projectCardLink}>
         <div className={styles.projectCard}>
             <div className={styles.thumbnail}>
                 {thumbnailUrl ? (
@@ -155,6 +239,17 @@ function ProjectCard({ project }: { project: Project }) {
                             <line x1="16" y1="17" x2="8" y2="17"/>
                             <polyline points="10 9 9 9 8 9"/>
                         </svg>
+                    </div>
+                )}
+                {project.status === 'processing' && project.progress !== undefined && (
+                    <div className={styles.progressOverlay}>
+                        <div className={styles.progressBar}>
+                            <div 
+                                className={styles.progressFill} 
+                                style={{ width: `${project.progress}%` }}
+                            />
+                        </div>
+                        <span className={styles.progressText}>{project.progress}%</span>
                     </div>
                 )}
             </div>

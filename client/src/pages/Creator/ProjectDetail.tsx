@@ -51,9 +51,6 @@ function ProjectDetail() {
       <div className={styles.container}>
         <div className={styles.error}>
           <p>{error || '프로젝트를 찾을 수 없습니다.'}</p>
-          <button onClick={() => navigate('/creator/projects')} className={styles.backButton}>
-            프로젝트 목록으로
-          </button>
         </div>
       </div>
     );
@@ -62,9 +59,6 @@ function ProjectDetail() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button onClick={() => navigate(-1)} className={styles.backButton}>
-          ← 뒤로가기
-        </button>
         <h1 className={styles.title}>{project.project_name}</h1>
         <div className={styles.date}>{formattedDate}</div>
       </div>
@@ -72,12 +66,12 @@ function ProjectDetail() {
       <div className={styles.content}>
         {/* 비디오 프리뷰 섹션 */}
         <section className={styles.videoSection}>
-          <h2 className={styles.sectionTitle}>결과물</h2>
           <div className={styles.videoContainer}>
             {project.videoUrl ? (
               <video
                 src={project.videoUrl}
                 controls
+                controlsList="nodownload nofullscreen"
                 className={styles.videoPlayer}
                 autoPlay
                 muted

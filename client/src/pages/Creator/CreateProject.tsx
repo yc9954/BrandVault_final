@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './CreateProject.module.css';
 import { fetchUserProducts, createProject } from '../../api/productApi';
-import { processVideoInsertion } from '../../api/videoInsertApi';
+import { startVideoInsertion } from '../../api/videoInsertApi';
 
 type PurchasedProduct = {
   purchaseId: number;
@@ -35,6 +35,9 @@ function CreateProject() {
   const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [progressStatus, setProgressStatus] = useState<string>('');
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [filteredProducts, setFilteredProducts] = useState<PurchasedProduct[]>([]);
+  const [showInsertionInfoModal, setShowInsertionInfoModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +48,7 @@ function CreateProject() {
         setIsLoadingProducts(true);
         const data = await fetchUserProducts(100, null); // 최대 100개까지
         setProducts(data.products);
+        setFilteredProducts(data.products);
       } catch (err) {
         setErrorMessage('에셋 목록을 불러오는 데 실패했습니다.');
         setShowErrorModal(true);
@@ -55,6 +59,24 @@ function CreateProject() {
 
     loadProducts();
   }, []);
+
+  // 검색 필터링 (디바운싱)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!searchKeyword || searchKeyword.trim() === '') {
+        setFilteredProducts(products);
+      } else {
+        const keyword = searchKeyword.trim().toLowerCase();
+        const filtered = products.filter(product => 
+          product.productName.toLowerCase().includes(keyword) ||
+          product.brandName.toLowerCase().includes(keyword)
+        );
+        setFilteredProducts(filtered);
+      }
+    }, 500); // 500ms 디바운싱 (프로덕트 라이브러리와 동일)
+
+    return () => clearTimeout(timeoutId);
+  }, [searchKeyword, products]);
 
   // 동영상 파일 선택 핸들러
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,17 +120,41 @@ function CreateProject() {
       }
     }
     
+    const wasEmpty = selectedProducts.length === 0;
+    const isDeselecting = selectedProducts.includes(productId);
+    
     setSelectedProducts(prev => 
       prev.includes(productId)
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
+    
+    // 에셋 선택 해제 시 삽입 위치 초기화
+    if (isDeselecting) {
+      setSelectedAssetForInsertion(null);
+      setInsertionPosition(null);
+    }
+    
     // 비디오 삽입용 에셋도 함께 선택/해제
     if (selectedAssetForInsertion === productId) {
       setSelectedAssetForInsertion(null);
       setInsertionPosition(null);
     }
   };
+
+  // 에셋과 비디오가 모두 선택되었을 때 중앙에 삽입 위치 자동 설정 및 안내 모달 표시
+  useEffect(() => {
+    if (selectedProducts.length > 0 && videoFile && isVideoLoaded && !showInsertionInfoModal) {
+      // 삽입 위치가 없으면 중앙에 설정
+      if (!insertionPosition && videoRef.current && videoRef.current.videoWidth && videoRef.current.videoHeight) {
+        const centerX = Math.round(videoRef.current.videoWidth / 2);
+        const centerY = Math.round(videoRef.current.videoHeight / 2);
+        setInsertionPosition({ x: centerX, y: centerY });
+      }
+      // 안내 모달 표시 (한 번만)
+      setShowInsertionInfoModal(true);
+    }
+  }, [selectedProducts.length, videoFile, isVideoLoaded]);
 
   // 비디오에 이미지 삽입용 에셋 선택
   const handleAssetForInsertionSelect = (productId: number) => {
@@ -126,6 +172,12 @@ function CreateProject() {
     const rect = video.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+
+    // 비디오 컨트롤 바 영역(하단 약 50px)은 클릭 무시
+    const controlBarHeight = 50;
+    if (y > rect.height - controlBarHeight) {
+      return;
+    }
 
     // 비디오의 실제 크기에 맞춰 좌표 조정
     const scaleX = (video.videoWidth || rect.width) / rect.width;
@@ -170,54 +222,6 @@ function CreateProject() {
     return data.gcsPath;
   };
 
-  // 비디오에 이미지 삽입 처리
-  const handleVideoInsertion = async () => {
-    if (!videoFile || !selectedAssetForInsertion || !insertionPosition) {
-      setErrorMessage('동영상, 에셋, 삽입 위치를 모두 선택해주세요.');
-      setShowErrorModal(true);
-      return;
-    }
-
-    setIsProcessingInsertion(true);
-    setError(null);
-
-    try {
-      // 선택된 에셋 찾기
-      const selectedProduct = products.find(p => p.productId === selectedAssetForInsertion);
-      if (!selectedProduct || !selectedProduct.signedImageUrl) {
-        throw new Error('선택된 에셋의 이미지를 찾을 수 없습니다.');
-      }
-
-      // 비디오에 이미지 삽입 API 호출 (이미지 URL을 직접 전달)
-      const result = await processVideoInsertion({
-        video: videoFile,
-        objectImageUrl: selectedProduct.signedImageUrl,
-        targetX: insertionPosition.x,
-        targetY: insertionPosition.y,
-      });
-
-      if (result.success && result.gcsPath) {
-        // 처리된 비디오 URL 가져오기
-        const urlResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/file/url?filePath=${encodeURIComponent(result.gcsPath)}`,
-          { credentials: 'include' }
-        );
-        if (urlResponse.ok) {
-          const urlData = await urlResponse.json();
-          setProcessedVideoUrl(urlData.temporaryUrl);
-          setUploadedVideoPath(result.gcsPath);
-        }
-      } else {
-        throw new Error(result.error || '비디오 삽입에 실패했습니다.');
-      }
-    } catch (err) {
-      const errorMsg = (err as Error).message || '비디오 삽입에 실패했습니다.';
-      setErrorMessage(errorMsg);
-      setShowErrorModal(true);
-    } finally {
-      setIsProcessingInsertion(false);
-    }
-  };
 
   // 프로젝트 생성 핸들러
   const handleCreate = async () => {
@@ -237,100 +241,66 @@ function CreateProject() {
     setError(null);
 
     try {
-      let videoPath = uploadedVideoPath;
+      // 비디오가 로드되지 않았으면 에러
+      if (!isVideoLoaded || !videoRef.current || !videoRef.current.videoWidth || !videoRef.current.videoHeight) {
+        setErrorMessage('비디오가 로드될 때까지 기다려주세요. 비디오 프리뷰가 완전히 로드된 후 다시 시도해주세요.');
+        setShowErrorModal(true);
+        setIsCreating(false);
+        return;
+      }
 
-      // 첫 번째 선택된 에셋으로 비디오에 이미지 삽입 시도
+      // 프로젝트 생성 (processing 상태로 생성)
+      const projectName = `프로젝트 ${new Date().toLocaleDateString()}`;
+      const project = await createProject({
+        projectName: projectName,
+        videoPath: null, // 비디오 삽입 완료 후 업데이트됨
+        productIds: selectedProducts,
+        status: 'processing',
+      });
+
+      // 비디오에 이미지 삽입 작업 시작 (비동기)
       if (selectedProducts.length > 0) {
-        // 비디오가 로드되지 않았으면 에러
-        if (!isVideoLoaded || !videoRef.current || !videoRef.current.videoWidth || !videoRef.current.videoHeight) {
-          setErrorMessage('비디오가 로드될 때까지 기다려주세요. 비디오 프리뷰가 완전히 로드된 후 다시 시도해주세요.');
-          setShowErrorModal(true);
-          setIsCreating(false);
+        const firstProductId = selectedProducts[0];
+        const selectedProduct = products.find(p => p.productId === firstProductId);
+        
+        if (selectedProduct && selectedProduct.signedImageUrl) {
+          const video = videoRef.current!;
+          let targetX: number;
+          let targetY: number;
+          
+          if (insertionPosition) {
+            targetX = insertionPosition.x;
+            targetY = insertionPosition.y;
+          } else {
+            targetX = Math.round(video.videoWidth / 2);
+            targetY = Math.round(video.videoHeight / 2);
+          }
+
+          // 비동기 작업 시작
+          const jobResult = await startVideoInsertion({
+            video: videoFile,
+            projectId: project.data.project_id,
+            objectImageUrl: selectedProduct.signedImageUrl,
+            targetX: targetX,
+            targetY: targetY,
+          });
+
+          // 진행 상황 페이지로 이동
+          navigate(`/creator/project/${project.data.project_id}/progress?jobId=${jobResult.jobId}`);
           return;
         }
-
-        try {
-          const firstProductId = selectedProducts[0];
-          const selectedProduct = products.find(p => p.productId === firstProductId);
-          
-          if (selectedProduct && selectedProduct.signedImageUrl) {
-            // 비디오 중앙에 삽입 (또는 사용자가 지정한 위치)
-            const video = videoRef.current;
-            let targetX: number;
-            let targetY: number;
-            
-            if (insertionPosition) {
-              // 사용자가 지정한 위치 사용
-              targetX = insertionPosition.x;
-              targetY = insertionPosition.y;
-            } else {
-              // 비디오 중앙
-              targetX = Math.round(video.videoWidth / 2);
-              targetY = Math.round(video.videoHeight / 2);
-            }
-
-            console.log('비디오에 이미지 삽입 시작:', { targetX, targetY, productName: selectedProduct.productName });
-
-            // 비디오에 이미지 삽입 API 호출 (이미지 URL을 직접 전달)
-            const result = await processVideoInsertion({
-              video: videoFile,
-              objectImageUrl: selectedProduct.signedImageUrl,
-              targetX: targetX,
-              targetY: targetY,
-            });
-
-            if (result.success && result.gcsPath) {
-              console.log('비디오에 이미지 삽입 성공:', result.gcsPath);
-              videoPath = result.gcsPath;
-              setUploadedVideoPath(videoPath);
-              
-              // 처리된 비디오 URL 가져오기
-              const urlResponse = await fetch(
-                `${process.env.REACT_APP_API_URL}/api/file/url?filePath=${encodeURIComponent(result.gcsPath)}`,
-                { credentials: 'include' }
-              );
-              if (urlResponse.ok) {
-                const urlData = await urlResponse.json();
-                setProcessedVideoUrl(urlData.temporaryUrl);
-              }
-            } else {
-              throw new Error(result.error || '비디오에 이미지 삽입에 실패했습니다.');
-            }
-          } else {
-            console.warn('선택된 에셋의 이미지 URL을 찾을 수 없습니다.');
-            // 원본 비디오로 진행
-            if (!videoPath) {
-              videoPath = await uploadVideo(videoFile);
-              setUploadedVideoPath(videoPath);
-            }
-          }
-        } catch (insertionError) {
-          console.error('비디오에 이미지 삽입 실패:', insertionError);
-          // 비디오에 이미지 삽입 실패 시 에러를 던져서 프로젝트 생성을 중단
-          const errorMsg = insertionError instanceof Error ? insertionError.message : String(insertionError);
-          const shortErrorMsg = errorMsg.length > 200 ? errorMsg.substring(0, 200) + '...' : errorMsg;
-          throw new Error(`비디오에 이미지 삽입에 실패했습니다: ${shortErrorMsg}`);
-        }
-      } else {
-        // 에셋이 선택되지 않았으면 원본 비디오 업로드
-        if (!videoPath) {
-          videoPath = await uploadVideo(videoFile);
-          setUploadedVideoPath(videoPath);
-        }
       }
 
-      // videoPath가 여전히 null이면 업로드 (안전장치)
-      if (!videoPath) {
-        videoPath = await uploadVideo(videoFile);
-        setUploadedVideoPath(videoPath);
-      }
+      // 이미지 삽입이 필요 없는 경우 (에셋이 이미지가 아닌 경우 등)
+      // 원본 비디오 업로드
+      const videoPath = await uploadVideo(videoFile);
 
-      // 프로젝트 생성 (백엔드에 저장)
-      const projectName = `프로젝트 ${new Date().toLocaleDateString()}`;
+      // 프로젝트 업데이트 (완료 상태로)
       await createProject({
         projectName: projectName,
         videoPath: videoPath,
         productIds: selectedProducts,
+        status: 'completed',
       });
 
       // 완료 상태로 변경
@@ -381,9 +351,6 @@ function CreateProject() {
             <button onClick={handleDownload} className={styles.downloadButton}>
               동영상 다운로드
             </button>
-            <button onClick={() => navigate('/creator/projects')} className={styles.backButton}>
-              내 프로젝트 보기
-            </button>
           </div>
         </div>
       </div>
@@ -394,9 +361,6 @@ function CreateProject() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>새 프로젝트 생성</h1>
-        <button onClick={() => navigate(-1)} className={styles.backButton}>
-          ← 뒤로가기
-        </button>
       </div>
 
       {/* 에러 모달 */}
@@ -428,25 +392,20 @@ function CreateProject() {
       )}
 
       <div className={styles.content}>
-        {/* 동영상 업로드 섹션 */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>동영상 업로드</h2>
-          <div className={styles.videoUploadArea}>
+        <div className={styles.mainContent}>
+          {/* 동영상 업로드 섹션 */}
+          <section className={styles.section}>
             {videoPreview ? (
               <div className={styles.videoPreview} ref={videoContainerRef}>
                 <video 
                   ref={videoRef}
                   src={processedVideoUrl || videoPreview} 
                   controls 
+                  controlsList="nodownload nofullscreen"
                   className={styles.videoPlayer}
                   onClick={handleVideoClick}
                   onLoadedMetadata={handleVideoLoadedMetadata}
                 />
-                {selectedProducts.length > 0 && !insertionPosition && (
-                  <div className={styles.positionHint}>
-                    비디오에서 이미지를 삽입할 위치를 클릭하세요 (선택사항)
-                  </div>
-                )}
                 {insertionPosition && (
                   <div 
                     className={styles.positionMarker}
@@ -458,6 +417,24 @@ function CreateProject() {
                     <div className={styles.markerDot}></div>
                   </div>
                 )}
+                {showInsertionInfoModal && (
+                  <div 
+                    className={styles.insertionInfoModal}
+                    onClick={() => setShowInsertionInfoModal(false)}
+                  >
+                    <div className={styles.insertionInfoContent}>
+                      <p>
+                        선택한 첫 번째 에셋 이미지가 비디오 중앙에 자동으로 삽입됩니다.
+                        비디오 프리뷰를 클릭하여 삽입 위치를 변경할 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {insertionPosition && (
+                  <div className={styles.positionInfoFixed}>
+                    삽입 위치: ({insertionPosition.x}, {insertionPosition.y})
+                  </div>
+                )}
                 <button 
                   onClick={() => {
                     setVideoFile(null);
@@ -465,6 +442,7 @@ function CreateProject() {
                     setProcessedVideoUrl(null);
                     setSelectedAssetForInsertion(null);
                     setInsertionPosition(null);
+                    setShowInsertionInfoModal(false);
                   }}
                   className={styles.removeButton}
                 >
@@ -472,84 +450,75 @@ function CreateProject() {
                 </button>
               </div>
             ) : (
-              <label className={styles.uploadLabel}>
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoChange}
-                  className={styles.fileInput}
-                />
-                <div className={styles.uploadPlaceholder}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                  </svg>
-                  <p>동영상 파일을 선택하거나 드래그하세요</p>
-                </div>
-              </label>
-            )}
-          </div>
-        </section>
-
-        {/* 에셋 선택 섹션 */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>에셋 선택</h2>
-          {isLoadingProducts ? (
-            <div className={styles.loading}>
-              <div className={styles.spinner}></div>
-            </div>
-          ) : products.length === 0 ? (
-            <div className={styles.emptyMessage}>
-              구매한 에셋이 없습니다. <a href="/creator">에셋을 구매</a>해주세요.
-            </div>
-          ) : (
-            <div className={styles.productGrid}>
-              {products.map(product => (
-                <div
-                  key={product.purchaseId}
-                  className={`${styles.productCard} ${selectedProducts.includes(product.productId) ? styles.selected : ''}`}
-                  onClick={() => handleProductToggle(product.productId)}
-                >
-                  {product.signedImageUrl && (
-                    <img src={product.signedImageUrl} alt={product.productName} className={styles.productImage} />
-                  )}
-                  <div className={styles.productInfo}>
-                    <h3 className={styles.productName}>{product.productName}</h3>
-                    <p className={styles.productBrand}>{product.brandName}</p>
+              <div className={styles.videoUploadArea}>
+                <label className={styles.uploadLabel}>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    className={styles.fileInput}
+                  />
+                  <div className={styles.uploadPlaceholder}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                    <p>동영상 파일을 선택하거나 드래그하세요</p>
                   </div>
-                  {selectedProducts.includes(product.productId) && (
-                    <div className={styles.checkmark}>✓</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* 비디오에 이미지 삽입 안내 섹션 */}
-        {selectedProducts.length > 0 && videoFile && (
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>비디오에 이미지 삽입 안내</h2>
-            <div className={styles.insertionInfo}>
-              {!isVideoLoaded ? (
-                <p className={styles.loadingMessage}>
-                  비디오 로딩 중... 비디오가 완전히 로드된 후 제작을 시작할 수 있습니다.
-                </p>
-              ) : (
-                <>
-                  <p>
-                    선택한 첫 번째 에셋 이미지가 비디오 중앙에 자동으로 삽입됩니다.
-                    비디오 프리뷰를 클릭하여 삽입 위치를 변경할 수 있습니다.
-                  </p>
-                  {insertionPosition && (
-                    <p className={styles.positionInfo}>
-                      삽입 위치: ({insertionPosition.x}, {insertionPosition.y})
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
+                </label>
+              </div>
+            )}
           </section>
-        )}
+
+          {/* 에셋 선택 섹션 */}
+          <section className={styles.section}>
+            {/* 검색 입력 */}
+            <div className={styles.searchBox}>
+              <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="#777">
+                <path d="M39.8 41.95 26.6 28.75q-1.5 1.3-3.5 2.025-2 .725-4.25 .725-5.4 0-9.15-3.75T6 18.6q0-5.3 3.75-9.05T18.85 5.8q5.3 0 9.05 3.75t3.75 9.05q0 2.25-.725 4.25-.725 2-2.025 3.5l13.2 13.2ZM19 30q4.6 0 7.8-3.2t3.2-7.8q0-4.6-3.2-7.8T19 8q-4.6 0-7.8 3.2T8 19q0 4.6 3.2 7.8T19 30Z"/>
+              </svg>
+              <input 
+                type="text" 
+                placeholder="브랜드 또는 에셋을 검색하세요..." 
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+              />
+            </div>
+            {isLoadingProducts ? (
+              <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className={styles.emptyMessage}>
+                구매한 에셋이 없습니다. <a href="/creator">에셋을 구매</a>해주세요.
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className={styles.emptyMessage}>
+                검색 결과가 없습니다.
+              </div>
+            ) : (
+              <div className={styles.productGrid}>
+                {filteredProducts.map(product => (
+                  <div
+                    key={product.purchaseId}
+                    className={`${styles.productCard} ${selectedProducts.includes(product.productId) ? styles.selected : ''}`}
+                    onClick={() => handleProductToggle(product.productId)}
+                  >
+                    {product.signedImageUrl && (
+                      <img src={product.signedImageUrl} alt={product.productName} className={styles.productImage} />
+                    )}
+                    <div className={styles.productInfo}>
+                      <h3 className={styles.productName}>{product.productName}</h3>
+                      <p className={styles.productBrand}>{product.brandName}</p>
+                    </div>
+                    {selectedProducts.includes(product.productId) && (
+                      <div className={styles.checkmark}>✓</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
 
         {/* 제작 버튼 */}
         <div className={styles.actionBar}>

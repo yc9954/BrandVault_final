@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { processVideoInsertion } from '../controllers/videoInsertController.js';
+import { startVideoInsertion, getVideoInsertionStatus } from '../controllers/videoInsertJobController.js';
 
 const router = Router();
 
@@ -11,59 +12,41 @@ const upload = multer({ storage: multer.memoryStorage() });
  * @swagger
  * /api/video-insertion/process:
  *   post:
- *     summary: Process video with object insertion
+ *     summary: Process video with object insertion (synchronous, deprecated)
  *     description: Inserts an object into a video by editing the first frame with Anydoor and propagating changes with AnyV2V
  *     tags: [Video Insertion]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - video
- *               - objectImage
- *               - targetX
- *               - targetY
- *             properties:
- *               video:
- *                 type: string
- *                 format: binary
- *                 description: Input video file
- *               objectImage:
- *                 type: string
- *                 format: binary
- *                 description: Object image to insert
- *               targetX:
- *                 type: number
- *                 description: X coordinate for object insertion in first frame
- *               targetY:
- *                 type: number
- *                 description: Y coordinate for object insertion in first frame
- *               objectMaskPoints:
- *                 type: string
- *                 description: Optional JSON array of points for object mask [[x,y], [x,y], ...]
- *     responses:
- *       200:
- *         description: Video processing completed successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 outputVideoUrl:
- *                   type: string
- *                 gcsPath:
- *                   type: string
- *       500:
- *         description: Server error
  */
 router.post(
   '/process',
-  upload.single('video'), // video만 파일로 받고, objectImageUrl은 body에서 받음
+  upload.single('video'),
   processVideoInsertion
+);
+
+/**
+ * @swagger
+ * /api/video-insertion/start:
+ *   post:
+ *     summary: Start video insertion job (asynchronous)
+ *     description: Starts an asynchronous video insertion job and returns jobId
+ *     tags: [Video Insertion]
+ */
+router.post(
+  '/start',
+  upload.single('video'),
+  startVideoInsertion
+);
+
+/**
+ * @swagger
+ * /api/video-insertion/status/:jobId:
+ *   get:
+ *     summary: Get video insertion job status
+ *     description: Returns the status and progress of a video insertion job
+ *     tags: [Video Insertion]
+ */
+router.get(
+  '/status/:jobId',
+  getVideoInsertionStatus
 );
 
 export default router;

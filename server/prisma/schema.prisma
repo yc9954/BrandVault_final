@@ -262,6 +262,9 @@ model Project {
   created_at    DateTime  @default(now())
   creator_id    Int
   thumbnail_url String?
+  status        String    @default("completed") // pending, processing, completed, failed
+  job_id        String?   // 비디오 삽입 작업 ID
+  progress      Int       @default(0) // 0-100 진행률
   creator       Creator   @relation(fields: [creator_id], references: [creator_id])
   products_used Product[] @relation("ProjectProducts")
 }

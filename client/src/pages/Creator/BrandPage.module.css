@@ -43,45 +43,6 @@
   margin: 2rem 0;
 }
 
-/* 브랜드 헤더 */
-.brandHeader {
-  padding: 2rem 0;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 2rem;
-}
-
-.brandInfo {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.brandLogo {
-  width: 200px;
-  height: 200px;
-  object-fit: contain;
-  border-radius: 12px;
-  background-color: #f8f8f8;
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
-}
-
-.brandDetails {
-  /* flex: 1 제거 */
-}
-
-.brandName {
-  margin: 0 0 0.5rem 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.brandStats {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #7a7a7a;
-}
 
 /* 에셋 목록 섹션 */
 .productsSection {
