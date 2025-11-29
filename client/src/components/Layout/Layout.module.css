@@ -19,8 +19,8 @@
   left: 0;
   height: 100vh; /* 뷰포트 전체 높이 */
   
-  background-color: #fff;
-  border-right: 1px solid #2a2a2a;
+  background-color: #f5f5f5;
+  border-right: 1px solid #e0e0e0;
   z-index: 10;
 
   /* (중요) 패딩이 너비(260px) 안쪽으로 계산되도록 함 */
