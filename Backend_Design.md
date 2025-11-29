@@ -18,13 +18,12 @@
 ## 목차
 1. [프로젝트 개요](#1-프로젝트-개요)
 2. [Backend 아키텍처](#2-backend-아키텍처)
-3. [Frontend/Backend 분리 전략](#3-frontendbackend-분리-전략)
-4. [API 엔드포인트 목록](#4-api-엔드포인트-목록)
-5. [개별 API 명세서](#5-개별-api-명세서)
-6. [데이터베이스 설계](#6-데이터베이스-설계)
-7. [보안 및 인증](#7-보안-및-인증)
-8. [파일 저장 시스템](#8-파일-저장-시스템)
-9. [비동기 작업 처리](#9-비동기-작업-처리)
+3. [API 엔드포인트 목록](#3-api-엔드포인트-목록)
+4. [개별 API 명세서](#4-개별-api-명세서)
+5. [데이터베이스 설계](#5-데이터베이스-설계)
+6. [보안 및 인증](#6-보안-및-인증)
+7. [파일 저장 시스템](#7-파일-저장-시스템)
+8. [비동기 작업 처리](#8-비동기-작업-처리)
 
 ---
 
@@ -92,36 +91,9 @@ server/
 
 ---
 
-## 3. Frontend/Backend 분리 전략
+## 3. API 엔드포인트 목록
 
-### 3.1 책임 분리
-
-| 영역 | Frontend | Backend |
-|------|----------|---------|
-| **UI 렌더링** | ✅ React 컴포넌트 | ❌ |
-| **3D 렌더링** | ✅ Three.js + React Three Fiber | ❌ |
-| **라우팅** | ✅ React Router DOM | ❌ |
-| **상태 관리** | ✅ React State/Hooks | ❌ |
-| **폼 검증** | ✅ 클라이언트 검증 | ✅ 서버 검증 (이중 검증) |
-| **인증 로직** | ❌ | ✅ JWT 생성/검증 |
-| **데이터베이스** | ❌ | ✅ Prisma ORM |
-| **파일 저장** | ❌ | ✅ GCS 업로드 |
-| **AI 처리** | ❌ | ✅ Replicate API 호출 |
-| **비즈니스 로직** | ❌ | ✅ 서비스 레이어 |
-| **비디오 처리** | ❌ | ✅ FFmpeg + AI 파이프라인 |
-
-### 3.2 통신 방식
-
-1. **REST API**: 일반 CRUD 작업
-2. **SSE (Server-Sent Events)**: <span style="color: blue">**실시간 작업 진행률**</span>
-3. **Signed URL**: 파일 다운로드 (보안)
-4. **Cookie**: JWT 토큰 전달 (HttpOnly)
-
----
-
-## 4. API 엔드포인트 목록
-
-### 4.1 전체 엔드포인트 요약
+### 3.1 전체 엔드포인트 요약
 
 | 카테고리 | 엔드포인트 수 | 인증 필요 | 주요 기능 |
 |---------|------------|----------|-----------|
@@ -135,83 +107,83 @@ server/
 | **파일 (Files)** | 3 | 0/3 | 업로드, 다운로드, 삭제 |
 | **총합** | **36** | **17/36** | - |
 
-### 4.2 카테고리별 엔드포인트
+### 3.2 카테고리별 엔드포인트
 
-#### 4.2.1 인증 (Authentication)
+#### 3.2.1 인증 (Authentication)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/auth/login/creator` | ❌ | Creator 로그인 |
-| POST | `/api/auth/login/brand` | ❌ | Brand 로그인 |
-| POST | `/api/auth/logout` | ✅ | 로그아웃 |
-| GET | `/api/auth/google` | ❌ | Google OAuth 시작 <span style="color: blue">**[추가]**</span> |
-| GET | `/api/auth/google/callback` | ❌ | Google OAuth 콜백 <span style="color: blue">**[추가]**</span> |
+| POST | `/api/auth/login/creator` | X | Creator 로그인 |
+| POST | `/api/auth/login/brand` | X | Brand 로그인 |
+| POST | `/api/auth/logout` | O | 로그아웃 |
+| GET | `/api/auth/google` | X | Google OAuth 시작 <span style="color: blue">**[추가]**</span> |
+| GET | `/api/auth/google/callback` | X | Google OAuth 콜백 <span style="color: blue">**[추가]**</span> |
 
-#### 4.2.2 제품 (Products)
+#### 3.2.2 제품 (Products)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/products` | ❌ | 제품 목록 (커서 페이지네이션) |
-| GET | `/api/products/search` | ❌ | 제품 검색 |
-| GET | `/api/products/:id` | ❌ | 제품 상세 조회 |
-| GET | `/api/products/user` | ✅ | 사용자 저장 제품 조회 |
-| GET | `/api/products/:id/download` | ❌ | 제품 다운로드 URL |
-| POST | `/api/products/:id/save` | ✅ | 제품 저장 |
-| POST | `/api/products/:id/like` | ✅ | 제품 좋아요 |
-| POST | `/api/products` | ✅ | 제품 생성 (Brand 전용) |
-| DELETE | `/api/products/:id` | ✅ | 제품 삭제 (Brand 전용) |
+| GET | `/api/products` | X | 제품 목록 (커서 페이지네이션) |
+| GET | `/api/products/search` | X | 제품 검색 |
+| GET | `/api/products/:id` | X | 제품 상세 조회 |
+| GET | `/api/products/user` | O | 사용자 저장 제품 조회 |
+| GET | `/api/products/:id/download` | X | 제품 다운로드 URL |
+| POST | `/api/products/:id/save` | O | 제품 저장 |
+| POST | `/api/products/:id/like` | O | 제품 좋아요 |
+| POST | `/api/products` | O | 제품 생성 (Brand 전용) |
+| DELETE | `/api/products/:id` | O | 제품 삭제 (Brand 전용) |
 
-#### 4.2.3 브랜드 (Brands)
+#### 3.2.3 브랜드 (Brands)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/brands/featured` | ❌ | 추천 브랜드 목록 |
-| GET | `/api/brands/search` | ❌ | 브랜드 검색 |
-| GET | `/api/brands/:id` | ❌ | 브랜드 상세 조회 |
-| GET | `/api/brands/assets` | ✅ | 브랜드 에셋 조회 (Brand 전용) |
+| GET | `/api/brands/featured` | X | 추천 브랜드 목록 |
+| GET | `/api/brands/search` | X | 브랜드 검색 |
+| GET | `/api/brands/:id` | X | 브랜드 상세 조회 |
+| GET | `/api/brands/assets` | O | 브랜드 에셋 조회 (Brand 전용) |
 
-#### 4.2.4 프로필 (Profile)
+#### 3.2.4 프로필 (Profile)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/profile` | ✅ | 프로필 조회 |
-| PUT | `/api/profile` | ✅ | 프로필 업데이트 |
-| PUT | `/api/profile/subscription` | ✅ | 구독 업데이트 |
+| GET | `/api/profile` | O | 프로필 조회 |
+| PUT | `/api/profile` | O | 프로필 업데이트 |
+| PUT | `/api/profile/subscription` | O | 구독 업데이트 |
 
-#### 4.2.5 3D Splat 변환
+#### 3.2.5 3D Splat 변환
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/splat/convert` | ✅ | 이미지 업로드 및 변환 시작 |
-| GET | `/api/splat/status/:jobId` | ✅ | 변환 상태 확인 |
-| GET | `/api/splat/download/:jobId` | ✅ | Splat 파일 다운로드 |
-| GET | `/api/splat/stream/:jobId` | ✅ | Splat 파일 스트리밍 (Range 지원) |
+| POST | `/api/splat/convert` | O | 이미지 업로드 및 변환 시작 |
+| GET | `/api/splat/status/:jobId` | O | 변환 상태 확인 |
+| GET | `/api/splat/download/:jobId` | O | Splat 파일 다운로드 |
+| GET | `/api/splat/stream/:jobId` | O | Splat 파일 스트리밍 (Range 지원) |
 
-#### 4.2.6 프로젝트 (Projects)
+#### 3.2.6 프로젝트 (Projects)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/projects` | ✅ | 프로젝트 목록 조회 |
-| POST | `/api/projects` | ✅ | 프로젝트 생성 |
-| GET | `/api/projects/:id` | ✅ | 프로젝트 상세 조회 |
-| DELETE | `/api/projects/:id` | ✅ | 프로젝트 삭제 |
+| GET | `/api/projects` | O | 프로젝트 목록 조회 |
+| POST | `/api/projects` | O | 프로젝트 생성 |
+| GET | `/api/projects/:id` | O | 프로젝트 상세 조회 |
+| DELETE | `/api/projects/:id` | O | 프로젝트 삭제 |
 
-#### 4.2.7 비디오 삽입 <span style="color: blue">**[신규 핵심 기능]**</span>
+#### 3.2.7 비디오 삽입 <span style="color: blue">**[신규 핵심 기능]**</span>
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/video-insertion/process` | ❌ | 비디오 삽입 (동기, deprecated) |
-| POST | `/api/video-insertion/start` | ❌ | 비디오 삽입 시작 (비동기) <span style="color: blue">**[추가]**</span> |
-| GET | `/api/video-insertion/status/:jobId` | ❌ | 작업 상태 조회 (SSE) <span style="color: blue">**[추가]**</span> |
-| POST | `/api/video-insertion/resample` | ❌ | 비디오 리샘플링 (프리뷰) <span style="color: blue">**[추가]**</span> |
+| POST | `/api/video-insertion/process` | X | 비디오 삽입 (동기, deprecated) |
+| POST | `/api/video-insertion/start` | X | 비디오 삽입 시작 (비동기) <span style="color: blue">**[추가]**</span> |
+| GET | `/api/video-insertion/status/:jobId` | X | 작업 상태 조회 (SSE) <span style="color: blue">**[추가]**</span> |
+| POST | `/api/video-insertion/resample` | X | 비디오 리샘플링 (프리뷰) <span style="color: blue">**[추가]**</span> |
 
-#### 4.2.8 파일 관리 (Files)
+#### 3.2.8 파일 관리 (Files)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/file/upload` | ❌ | 파일 업로드 (GCS) |
-| GET | `/api/file/url` | ❌ | Signed URL 생성 <span style="color: blue">**[변경]**</span> |
-| DELETE | `/api/file` | ❌ | 파일 삭제 (GCS) |
+| POST | `/api/file/upload` | X | 파일 업로드 (GCS) |
+| GET | `/api/file/url` | X | Signed URL 생성 <span style="color: blue">**[변경]**</span> |
+| DELETE | `/api/file` | X | 파일 삭제 (GCS) |
 
 ---
 
-## 5. 개별 API 명세서
+## 4. 개별 API 명세서
 
-### 5.1 인증 API
+### 4.1 인증 API
 
-#### 5.1.1 Creator 로그인
+#### 4.1.1 Creator 로그인
 
 **Endpoint 명칭**: Creator 로그인
 **Endpoint 명세**: 이메일과 비밀번호를 사용하여 Creator 계정으로 로그인하고 JWT 토큰을 발급받습니다.
@@ -253,7 +225,7 @@ server/
 
 ---
 
-#### 5.1.2 Google OAuth 로그인 <span style="color: blue">**[신규]**</span>
+#### 4.1.2 Google OAuth 로그인 <span style="color: blue">**[신규]**</span>
 
 **Endpoint 명칭**: Google OAuth 인증 시작
 **Endpoint 명세**: Google OAuth 2.0을 사용하여 인증을 시작하고, 인증 완료 후 JWT 토큰을 발급받습니다.
@@ -288,9 +260,9 @@ server/
 
 ---
 
-### 5.2 제품 API
+### 4.2 제품 API
 
-#### 5.2.1 제품 목록 조회 (커서 페이지네이션)
+#### 4.2.1 제품 목록 조회 (커서 페이지네이션)
 
 **Endpoint 명칭**: 제품 목록 조회
 **Endpoint 명세**: 인증 없이 전체 제품 목록을 조회하며, 커서 기반 무한 스크롤과 정렬 옵션을 지원합니다.
@@ -373,7 +345,7 @@ cursorValue=2025-01-01T00:00:00.000Z  # 커서 값 (정렬 기준에 따라 변�
 
 ---
 
-#### 5.2.2 제품 검색
+#### 4.2.2 제품 검색
 
 **Endpoint 명칭**: 제품 검색
 **Endpoint 명세**: 키워드를 입력받아 제품명, 카테고리, 브랜드명에서 검색하여 결과를 반환합니다.
@@ -429,7 +401,7 @@ limit=20                # 결과 제한 (기본값: 20)
 
 ---
 
-#### 5.2.3 제품 다운로드 URL 생성
+#### 4.2.3 제품 다운로드 URL 생성
 
 **Endpoint 명칭**: 제품 다운로드
 **Endpoint 명세**: 제품 ID와 다운로드 타입(image 또는 model)을 입력받아 다운로드용 Signed URL을 생성하고, 다운로드 카운트를 증가시킵니다.
@@ -477,9 +449,9 @@ type=model              # 다운로드 타입 (image | model)
 
 ---
 
-### 5.3 비디오 삽입 API <span style="color: blue">**[핵심 신규 기능]**</span>
+### 4.3 비디오 삽입 API <span style="color: blue">**[핵심 신규 기능]**</span>
 
-#### 5.3.1 비디오 삽입 작업 시작 (비동기)
+#### 4.3.1 비디오 삽입 작업 시작 (비동기)
 
 **Endpoint 명칭**: 비디오 제품 삽입 시작
 **Endpoint 명세**: 비디오 파일과 삽입할 제품 이미지를 업로드하고, AI 기반 비디오 편집 작업을 비동기로 시작합니다. 작업 ID를 반환하며, SSE를 통해 실시간 진행 상태를 조회할 수 있습니다.
@@ -553,7 +525,7 @@ objectMaskPoints: [[100,100],[200,100],[200,200],[100,200]]  # 마스크 포인�
 
 ---
 
-#### 5.3.2 작업 상태 조회 (SSE) <span style="color: blue">**[신규]**</span>
+#### 4.3.2 작업 상태 조회 (SSE) <span style="color: blue">**[신규]**</span>
 
 **Endpoint 명칭**: 비디오 삽입 작업 진행 상태 조회
 **Endpoint 명세**: SSE (Server-Sent Events)를 사용하여 비디오 삽입 작업의 실시간 진행 상태를 스트리밍합니다.
@@ -601,9 +573,9 @@ data: {"status":"completed","progress":100,"projectId":123,"thumbnail_url":"vide
 
 ---
 
-### 5.4 3D Splat 변환 API
+### 4.4 3D Splat 변환 API
 
-#### 5.4.1 이미지 업로드 및 변환 시작
+#### 4.4.1 이미지 업로드 및 변환 시작
 
 **Endpoint 명칭**: 3D Splat 변환 시작
 **Endpoint 명세**: 인증된 사용자가 이미지 파일을 업로드하면, Replicate Trellis AI 모델을 사용하여 3D Gaussian Splat 모델로 변환하는 작업을 시작합니다.
@@ -656,7 +628,7 @@ images: (binary)[]              # 이미지 파일 배열 (최대 10개, 현재�
 
 ---
 
-#### 5.4.2 Splat 파일 스트리밍 (Range 지원)
+#### 4.4.2 Splat 파일 스트리밍 (Range 지원)
 
 **Endpoint 명칭**: Splat 파일 스트리밍
 **Endpoint 명세**: 3D 뷰어에서 Splat 파일을 스트리밍으로 로드할 수 있도록 Range 요청을 지원합니다.
@@ -706,9 +678,9 @@ Access-Control-Allow-Origin: *
 
 ---
 
-### 5.5 파일 관리 API
+### 4.5 파일 관리 API
 
-#### 5.5.1 Signed URL 생성 <span style="color: blue">**[변경]**</span>
+#### 4.5.1 Signed URL 생성 <span style="color: blue">**[변경]**</span>
 
 **Endpoint 명칭**: 파일 URL 조회
 **Endpoint 명세**: GCS 파일 경로를 입력받아 시간 제한이 있는 Signed URL을 생성하여 반환합니다. 다운로드 파일명을 커스터마이징할 수 있습니다.
@@ -754,9 +726,9 @@ downloadAs=의자_모델.jpg                    # 다운로드 파일명 (선택
 
 ---
 
-## 6. 데이터베이스 설계
+## 5. 데이터베이스 설계
 
-### 6.1 ERD 주요 엔티티
+### 5.1 ERD 주요 엔티티
 
 ```
 Creator (크리에이터)
@@ -806,7 +778,7 @@ Platform_User (브랜드 사용자)
 └─ user_authority_level
 ```
 
-### 6.2 인덱스 전략
+### 5.2 인덱스 전략
 
 성능 최적화를 위한 복합 인덱스:
 ```sql
@@ -819,7 +791,7 @@ CREATE INDEX idx_product_created ON Product(created_at DESC, product_id DESC);
 CREATE INDEX idx_brand_asset_count ON Brand(asset_count);
 ```
 
-### 6.3 관계 설정
+### 5.3 관계 설정
 
 - Creator ↔ Project: 1:N
 - Creator ↔ Product_Purchase: 1:N
@@ -830,9 +802,9 @@ CREATE INDEX idx_brand_asset_count ON Brand(asset_count);
 
 ---
 
-## 7. 보안 및 인증
+## 6. 보안 및 인증
 
-### 7.1 JWT 인증
+### 6.1 JWT 인증
 
 **토큰 생성**:
 ```typescript
@@ -868,7 +840,7 @@ export const authenticateToken = (req, res, next) => {
 };
 ```
 
-### 7.2 Google OAuth 2.0 <span style="color: blue">**[추가]**</span>
+### 6.2 Google OAuth 2.0 <span style="color: blue">**[추가]**</span>
 
 **Passport 설정**:
 ```typescript
@@ -899,7 +871,7 @@ passport.use(new GoogleStrategy({
 }));
 ```
 
-### 7.3 브랜드 소유권 검증
+### 6.3 브랜드 소유권 검증
 
 ```typescript
 // 제품 삭제 시 소유권 확인
@@ -914,9 +886,9 @@ if (product.brand_id !== req.user.brandId) {
 
 ---
 
-## 8. 파일 저장 시스템
+## 7. 파일 저장 시스템
 
-### 8.1 GCS 구조 <span style="color: blue">**[변경]**</span>
+### 7.1 GCS 구조 <span style="color: blue">**[변경]**</span>
 
 **Bucket**: `brandvault-bucket` (환경 변수: `GCS_BUCKET_NAME`)
 
@@ -942,7 +914,7 @@ brandvault-bucket/
     │   └── edited_frame.jpg
 ```
 
-### 8.2 Signed URL 생성 <span style="color: blue">**[변경]**</span>
+### 7.2 Signed URL 생성 <span style="color: blue">**[변경]**</span>
 
 **목적**: GCS 파일을 시간 제한이 있는 URL로 제공하여 보안 강화
 
@@ -962,7 +934,7 @@ const [signedUrl] = await bucket.file(filePath).getSignedUrl({
 - GCS 버킷 권한 비공개 유지
 - 무단 접근 방지
 
-### 8.3 파일 경로 저장 전략
+### 7.3 파일 경로 저장 전략
 
 **DB 저장**: GCS 경로만 저장 (예: `brand-assets/5/chair.jpg`)
 **URL 생성**: 런타임에 Signed URL 동적 생성
@@ -974,9 +946,9 @@ const [signedUrl] = await bucket.file(filePath).getSignedUrl({
 
 ---
 
-## 9. 비동기 작업 처리
+## 8. 비동기 작업 처리
 
-### 9.1 작업 상태 관리 <span style="color: blue">**[추가]**</span>
+### 8.1 작업 상태 관리 <span style="color: blue">**[추가]**</span>
 
 **메모리 Map 사용**:
 ```typescript
@@ -996,7 +968,7 @@ interface JobStatus {
 - **메모리**: 빠른 조회, 실시간 진행률
 - **DB**: 영구 저장, 서버 재시작 후 복구
 
-### 9.2 서버 재시작 시 처리 <span style="color: blue">**[추가]**</span>
+### 8.2 서버 재시작 시 처리 <span style="color: blue">**[추가]**</span>
 
 **중단된 작업 자동 정리**:
 ```typescript
@@ -1013,7 +985,7 @@ cleanupInterruptedJobs().then(() => {
 2. 상태를 `failed`로 변경
 3. 에러 메시지: "서버 재시작으로 인한 작업 중단"
 
-### 9.3 SSE 연결 관리 <span style="color: blue">**[추가]**</span>
+### 8.3 SSE 연결 관리 <span style="color: blue">**[추가]**</span>
 
 **연결 유지**:
 ```typescript
@@ -1046,24 +1018,24 @@ req.on('close', () => {
 
 ---
 
-## 10. 핵심 비즈니스 로직 구현 검증
+## 9. 핵심 비즈니스 로직 구현 검증
 
-### 10.1 핵심 기능 1: AI 비디오 제품 삽입 <span style="color: blue">**[핵심]**</span>
+### 9.1 핵심 기능 1: AI 비디오 제품 삽입 <span style="color: blue">**[핵심]**</span>
 
 **구현 파일**: `server/src/services/videoInsertService.ts`
 
 **파이프라인 단계**:
-1. ✅ 비디오 리샘플링 (16프레임)
-2. ✅ 이미지 다운로드
-3. ✅ 첫 프레임 추출 (FFmpeg)
-4. ✅ GCS 업로드 (임시 파일)
-5. ✅ SAM2 마스크 생성 (Replicate API)
-6. ✅ 타겟 마스크 생성 (Sharp)
-7. ✅ Anydoor 편집 (Replicate API)
-8. ✅ AnyV2V 비디오 생성 (Replicate API)
-9. ✅ 프레임 복원 (원본 프레임 수)
-10. ✅ 최종 파일 저장 (GCS)
-11. ✅ 임시 파일 정리
+1. 비디오 리샘플링 (16프레임)
+2. 이미지 다운로드
+3. 첫 프레임 추출 (FFmpeg)
+4. GCS 업로드 (임시 파일)
+5. SAM2 마스크 생성 (Replicate API)
+6. 타겟 마스크 생성 (Sharp)
+7. Anydoor 편집 (Replicate API)
+8. AnyV2V 비디오 생성 (Replicate API)
+9. 프레임 복원 (원본 프레임 수)
+10. 최종 파일 저장 (GCS)
+11. 임시 파일 정리
 
 **AI 모델**:
 - SAM2: 객체 세그멘테이션
@@ -1074,50 +1046,50 @@ req.on('close', () => {
 - 프레임 리샘플링으로 처리 속도 3-5배 향상
 - 프레임 복원으로 품질 유지
 
-### 10.2 핵심 기능 2: 3D Splat 변환
+### 9.2 핵심 기능 2: 3D Splat 변환
 
 **구현 파일**: `server/src/services/splatService.ts`
 
 **변환 프로세스**:
-1. ✅ 이미지 → Base64 Data URI
-2. ✅ Replicate Trellis 모델 호출
-3. ✅ GLB/PLY 파일 다운로드
-4. ✅ 로컬 저장 (`/splats/{jobId}.{ext}`)
-5. ✅ 상태 관리 (pending → processing → completed)
+1. 이미지 → Base64 Data URI
+2. Replicate Trellis 모델 호출
+3. GLB/PLY 파일 다운로드
+4. 로컬 저장 (`/splats/{jobId}.{ext}`)
+5. 상태 관리 (pending → processing → completed)
 
 **AI 모델**:
 - Trellis: 2D → 3D 변환 (firtoz/trellis)
 
-### 10.3 핵심 기능 3: 제품 마켓플레이스
+### 9.3 핵심 기능 3: 제품 마켓플레이스
 
 **구현 파일**: `server/src/controllers/productController.ts`
 
 **주요 기능**:
-1. ✅ 커서 기반 무한 스크롤
-2. ✅ 정렬 (최신순, 인기순, 조회수순)
-3. ✅ 검색 (제품명, 카테고리, 브랜드명)
-4. ✅ Signed URL 자동 생성
-5. ✅ 조회수/다운로드수 자동 증가
-6. ✅ 브랜드 정보 포함
+1. 커서 기반 무한 스크롤
+2. 정렬 (최신순, 인기순, 조회수순)
+3. 검색 (제품명, 카테고리, 브랜드명)
+4. Signed URL 자동 생성
+5. 조회수/다운로드수 자동 증가
+6. 브랜드 정보 포함
 
-### 10.4 핵심 기능 4: 인증 시스템
+### 9.4 핵심 기능 4: 인증 시스템
 
 **구현 파일**:
 - `server/src/controllers/authController.ts`
 - `server/src/config/passport.ts`
 
 **주요 기능**:
-1. ✅ JWT 기반 인증
-2. ✅ Google OAuth 2.0 통합
-3. ✅ Creator / Brand 이중 로그인
-4. ✅ HttpOnly 쿠키 (XSS 방지)
-5. ✅ 토큰 만료 (1시간)
+1. JWT 기반 인증
+2. Google OAuth 2.0 통합
+3. Creator / Brand 이중 로그인
+4. HttpOnly 쿠키 (XSS 방지)
+5. 토큰 만료 (1시간)
 
 ---
 
-## 11. API 테스트 가이드
+## 10. API 테스트 가이드
 
-### 11.1 Swagger UI
+### 10.1 Swagger UI
 
 **URL**: `http://localhost:3000/api-docs`
 
@@ -1127,7 +1099,7 @@ req.on('close', () => {
 - 인증 방법 (cookieAuth)
 - 예시 요청/응답
 
-### 11.2 주요 테스트 시나리오
+### 10.2 주요 테스트 시나리오
 
 #### 시나리오 1: Creator 로그인 → 제품 검색 → 제품 저장
 ```bash
@@ -1169,38 +1141,38 @@ curl -N http://localhost:3000/api/video-insertion/status/abc-123
 
 ---
 
-## 12. 구현과 설계 일치 검증
+## 11. 구현과 설계 일치 검증
 
-### 12.1 API 엔드포인트 일치
+### 11.1 API 엔드포인트 일치
 
 | 설계 문서 | 실제 구현 | 일치 여부 |
 |----------|----------|----------|
-| 36개 엔드포인트 | 36개 라우트 | ✅ |
-| 인증 5개 | 5개 구현 | ✅ |
-| 제품 9개 | 9개 구현 | ✅ |
-| 비디오 삽입 4개 | 4개 구현 | ✅ |
-| SSE 지원 | SSE 구현 | ✅ |
+| 36개 엔드포인트 | 36개 라우트 | O |
+| 인증 5개 | 5개 구현 | O |
+| 제품 9개 | 9개 구현 | O |
+| 비디오 삽입 4개 | 4개 구현 | O |
+| SSE 지원 | SSE 구현 | O |
 
-### 12.2 비즈니스 로직 일치
+### 11.2 비즈니스 로직 일치
 
 | 핵심 기능 | 설계 | 구현 | 일치 여부 |
 |----------|------|------|----------|
-| AI 비디오 삽입 | SAM2+Anydoor+AnyV2V | 구현 완료 | ✅ |
-| 프레임 리샘플링 | 16프레임 | 구현 완료 | ✅ |
-| 3D Splat 변환 | Trellis 모델 | 구현 완료 | ✅ |
-| Signed URL | 15분 만료 | 구현 완료 | ✅ |
-| 커서 페이지네이션 | 무한 스크롤 | 구현 완료 | ✅ |
+| AI 비디오 삽입 | SAM2+Anydoor+AnyV2V | 구현 완료 | O |
+| 프레임 리샘플링 | 16프레임 | 구현 완료 | O |
+| 3D Splat 변환 | Trellis 모델 | 구현 완료 | O |
+| Signed URL | 15분 만료 | 구현 완료 | O |
+| 커서 페이지네이션 | 무한 스크롤 | 구현 완료 | O |
 
-### 12.3 데이터베이스 일치
+### 11.3 데이터베이스 일치
 
 | 테이블 | 설계 | 구현 | 일치 여부 |
 |--------|------|------|----------|
-| Creator | ✅ | ✅ | ✅ |
-| Brand | ✅ | ✅ | ✅ |
-| Product | ✅ | ✅ | ✅ |
-| Project | ✅ | ✅ | ✅ |
-| Product_Purchase | ✅ | ✅ | ✅ |
-| 인덱스 (3개) | ✅ | ✅ | ✅ |
+| Creator | O | O | O |
+| Brand | O | O | O |
+| Product | O | O | O |
+| Project | O | O | O |
+| Product_Purchase | O | O | O |
+| 인덱스 (3개) | O | O | O |
 
 ---
 
