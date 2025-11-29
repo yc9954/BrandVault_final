@@ -208,13 +208,29 @@ function updateJobStatus(
   error?: string
 ): void {
   const current = jobStatusMap.get(jobId) || { status: 'pending', progress: 0 };
-  jobStatusMap.set(jobId, {
+  const update: {
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    progress: number;
+    error?: string;
+    result?: {
+      gcsPath: string;
+      outputVideoUrl: string;
+    };
+  } = {
     ...current,
     status,
     progress,
-    result,
-    error,
-  });
+  };
+  
+  if (result !== undefined) {
+    update.result = result;
+  }
+  
+  if (error !== undefined) {
+    update.error = error;
+  }
+  
+  jobStatusMap.set(jobId, update);
 }
 
 /**
