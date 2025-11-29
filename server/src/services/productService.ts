@@ -424,3 +424,69 @@ export const searchProducts = async (keyword: string, limit: number = 20): Promi
 
     return productsWithUrls;
 };
+
+/**
+ * 에셋 저장 (Product_Purchase 테이블에 추가)
+ */
+export const saveProduct = async (creatorId: number, productId: number): Promise<{ saved: boolean; message: string }> => {
+    try {
+        // 이미 저장되어 있는지 확인
+        const existingPurchase = await prisma.product_Purchase.findUnique({
+            where: {
+                creator_id_product_id: {
+                    creator_id: creatorId,
+                    product_id: productId,
+                },
+            },
+        });
+
+        if (existingPurchase) {
+            return { saved: false, message: '이미 저장됨' };
+        }
+
+        // 저장
+        await prisma.product_Purchase.create({
+            data: {
+                creator_id: creatorId,
+                product_id: productId,
+            },
+        });
+
+        return { saved: true, message: '저장됨' };
+    } catch (error) {
+        console.error('Error saving product:', error);
+        throw new Error('Failed to save product.');
+    }
+};
+
+/**
+ * 좋아요 토글 (좋아요 추가/제거)
+ */
+export const toggleLikeProduct = async (creatorId: number, productId: number): Promise<{ liked: boolean; likeCount: number }> => {
+    try {
+        const product = await prisma.product.findUnique({
+            where: { product_id: productId },
+            select: { like_count: true },
+        });
+
+        if (!product) {
+            throw new Error('Product not found');
+        }
+
+        // 좋아요 수 증가
+        const updatedProduct = await prisma.product.update({
+            where: { product_id: productId },
+            data: {
+                like_count: {
+                    increment: 1,
+                },
+            },
+            select: { like_count: true },
+        });
+
+        return { liked: true, likeCount: updatedProduct.like_count };
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        throw new Error('Failed to toggle like.');
+    }
+};

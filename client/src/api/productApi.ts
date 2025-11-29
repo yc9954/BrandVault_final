@@ -364,3 +364,41 @@ export const deleteProject = async (projectId: number): Promise<{ success: boole
 
     return response.json();
 };
+
+/**
+ * 에셋 저장
+ */
+export const saveProduct = async (productId: number): Promise<{ saved: boolean; message: string }> => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_BASE_URL}/api/products/${productId}/save`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '저장에 실패했습니다.' }));
+        throw new Error(errorData.message || '저장에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+};
+
+/**
+ * 좋아요 토글
+ */
+export const toggleLikeProduct = async (productId: number): Promise<{ liked: boolean; likeCount: number }> => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_BASE_URL}/api/products/${productId}/like`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '좋아요에 실패했습니다.' }));
+        throw new Error(errorData.message || '좋아요에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+};

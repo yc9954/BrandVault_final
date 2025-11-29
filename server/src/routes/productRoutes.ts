@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts, searchProducts } from '../controllers/productController.js'
+import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts, searchProducts, saveProduct, toggleLikeProduct } from '../controllers/productController.js'
 import { authenticateToken } from '../midwares/authMiddleware.js';
 const router = Router();
 
@@ -163,4 +163,6 @@ router.get('/:id', getProductDetails);
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id/download', getProductDownloadUrl);
+router.post('/:id/save', authenticateToken, saveProduct);
+router.post('/:id/like', authenticateToken, toggleLikeProduct);
 export default router;

@@ -160,6 +160,27 @@
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: #e0e0e0;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saveMessage {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .infoSection {

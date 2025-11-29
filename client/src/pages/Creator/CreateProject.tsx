@@ -404,8 +404,8 @@ function CreateProject() {
 
       <div className={styles.content}>
         <div className={styles.mainContent}>
-          {/* 동영상 업로드 섹션 */}
-          <section className={styles.section}>
+        {/* 동영상 업로드 섹션 */}
+        <section className={styles.section}>
             {videoPreview ? (
               <div className={styles.videoPreview} ref={videoContainerRef}>
                 <video 
@@ -462,26 +462,26 @@ function CreateProject() {
               </div>
             ) : (
               <div className={styles.videoUploadArea}>
-                <label className={styles.uploadLabel}>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoChange}
-                    className={styles.fileInput}
-                  />
-                  <div className={styles.uploadPlaceholder}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                    </svg>
-                    <p>동영상 파일을 선택하거나 드래그하세요</p>
-                  </div>
-                </label>
+              <label className={styles.uploadLabel}>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoChange}
+                  className={styles.fileInput}
+                />
+                <div className={styles.uploadPlaceholder}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                  </svg>
+                  <p>동영상 파일을 선택하거나 드래그하세요</p>
+                </div>
+              </label>
               </div>
             )}
-          </section>
+        </section>
 
-          {/* 에셋 선택 섹션 */}
-          <section className={styles.section}>
+        {/* 에셋 선택 섹션 */}
+        <section className={styles.section}>
             {/* 검색 입력 */}
             <div className={styles.searchBox}>
               <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="#777">
@@ -494,41 +494,41 @@ function CreateProject() {
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
             </div>
-            {isLoadingProducts ? (
-              <div className={styles.loading}>
-                <div className={styles.spinner}></div>
-              </div>
-            ) : products.length === 0 ? (
-              <div className={styles.emptyMessage}>
-                구매한 에셋이 없습니다. <a href="/creator">에셋을 구매</a>해주세요.
-              </div>
+          {isLoadingProducts ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+            </div>
+          ) : products.length === 0 ? (
+            <div className={styles.emptyMessage}>
+              구매한 에셋이 없습니다. <a href="/creator">에셋을 구매</a>해주세요.
+            </div>
             ) : filteredProducts.length === 0 ? (
               <div className={styles.emptyMessage}>
                 검색 결과가 없습니다.
               </div>
-            ) : (
-              <div className={styles.productGrid}>
+          ) : (
+            <div className={styles.productGrid}>
                 {filteredProducts.map(product => (
-                  <div
-                    key={product.purchaseId}
-                    className={`${styles.productCard} ${selectedProducts.includes(product.productId) ? styles.selected : ''}`}
-                    onClick={() => handleProductToggle(product.productId)}
-                  >
-                    {product.signedImageUrl && (
-                      <img src={product.signedImageUrl} alt={product.productName} className={styles.productImage} />
-                    )}
-                    <div className={styles.productInfo}>
-                      <h3 className={styles.productName}>{product.productName}</h3>
-                      <p className={styles.productBrand}>{product.brandName}</p>
-                    </div>
-                    {selectedProducts.includes(product.productId) && (
-                      <div className={styles.checkmark}>✓</div>
-                    )}
+                <div
+                  key={product.purchaseId}
+                  className={`${styles.productCard} ${selectedProducts.includes(product.productId) ? styles.selected : ''}`}
+                  onClick={() => handleProductToggle(product.productId)}
+                >
+                  {product.signedImageUrl && (
+                    <img src={product.signedImageUrl} alt={product.productName} className={styles.productImage} />
+                  )}
+                  <div className={styles.productInfo}>
+                    <h3 className={styles.productName}>{product.productName}</h3>
+                    <p className={styles.productBrand}>{product.brandName}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
+                  {selectedProducts.includes(product.productId) && (
+                    <div className={styles.checkmark}>✓</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
         </div>
 
         {/* 제작 버튼 */}

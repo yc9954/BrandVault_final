@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ProductDetail.module.css';
 // 💡 [수정] 다운로드 API 함수 임포트
-import { fetchProductById, fetchProductDownloadUrl, fetchBrandById } from '../../api/productApi';
+import { fetchProductById, fetchProductDownloadUrl, fetchBrandById, saveProduct, toggleLikeProduct } from '../../api/productApi';
 import BrandHeader from '../../components/BrandHeader/BrandHeader';
 
 // 💡 API 응답 타입 정의 (가정)
@@ -21,6 +21,11 @@ function ProductDetail() {
   
   // 💡 [신규] 다운로드 버튼 로딩 상태
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // 저장 및 좋아요 상태
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isLiking, setIsLiking] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -75,6 +80,42 @@ function ProductDetail() {
       alert(`다운로드에 실패했습니다: ${(err as Error).message}`);
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  // 저장 핸들러
+  const handleSave = async () => {
+    if (!id) return;
+
+    try {
+      const result = await saveProduct(parseInt(id));
+      setIsSaved(result.saved);
+      setSaveMessage(result.message);
+      
+      // 3초 후 메시지 숨기기
+      setTimeout(() => {
+        setSaveMessage(null);
+      }, 3000);
+    } catch (err) {
+      alert(`저장에 실패했습니다: ${(err as Error).message}`);
+    }
+  };
+
+  // 좋아요 핸들러
+  const handleLike = async () => {
+    if (!id || isLiking) return;
+
+    setIsLiking(true);
+    try {
+      const result = await toggleLikeProduct(parseInt(id));
+      setProduct((prev: ProductDetailData) => ({
+        ...prev,
+        like_count: result.likeCount
+      }));
+    } catch (err) {
+      alert(`좋아요에 실패했습니다: ${(err as Error).message}`);
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -148,8 +189,7 @@ function ProductDetail() {
             {/* 💡 스키마에 '사용' 필드는 없으므로 download_count를 사용합니다. */}
             <span>사용 <b>{product.download_count.toLocaleString()}</b></span> 
             <span>조회수 <b>{product.view_count.toLocaleString()}</b></span>
-            {/* 💡 스키마에 '좋아요' 필드는 없으므로 download_count를 임시 사용합니다. */}
-            <span>좋아요 <b>{product.download_count.toLocaleString()}</b>개</span>
+            <span>좋아요 <b>{(product.like_count || 0).toLocaleString()}</b>개</span>
           </div>
 
           {/* 💡 [수정] 다운로드 버튼에 onClick 및 disabled 상태 추가 */}
@@ -163,10 +203,25 @@ function ProductDetail() {
           </button>
           
           <div className={styles.buttonGroup}>
-            {/* 💡 '저장', '좋아요' 기능은 현재 API에 구현되지 않았습니다. */}
-            <button className={styles.actionButton}>저장</button>
-            <button className={styles.actionButton}>좋아요</button>
+            <button 
+              className={styles.actionButton}
+              onClick={handleSave}
+            >
+              {saveMessage || '저장'}
+            </button>
+            <button 
+              className={styles.actionButton}
+              onClick={handleLike}
+              disabled={isLiking}
+            >
+              {isLiking ? '처리 중...' : '좋아요'}
+            </button>
           </div>
+          {saveMessage && (
+            <div className={styles.saveMessage}>
+              {saveMessage}
+            </div>
+          )}
 
           <div className={styles.infoSection}>
             <div className={styles.infoRow}>

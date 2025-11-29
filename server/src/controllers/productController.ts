@@ -188,3 +188,65 @@ export const searchProducts = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message || 'Failed to search products.' });
     }
 };
+
+/**
+ * 에셋 저장
+ */
+export const saveProduct = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { userId?: number } | undefined;
+        const userId = user?.userId;
+        
+        if (!userId) {
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
+        }
+
+        const productId = parseInt(req.params.id as string);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+
+        const result = await productService.saveProduct(userId, productId);
+        
+        res.status(200).json({ 
+            data: { 
+                saved: result.saved,
+                message: result.message 
+            } 
+        });
+    } catch (error) {
+        console.error('Error saving product:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to save product.' });
+    }
+};
+
+/**
+ * 좋아요 토글
+ */
+export const toggleLikeProduct = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { userId?: number } | undefined;
+        const userId = user?.userId;
+        
+        if (!userId) {
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
+        }
+
+        const productId = parseInt(req.params.id as string);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+
+        const result = await productService.toggleLikeProduct(userId, productId);
+        
+        res.status(200).json({ 
+            data: { 
+                liked: result.liked,
+                likeCount: result.likeCount 
+            } 
+        });
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to toggle like.' });
+    }
+};

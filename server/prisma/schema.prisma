@@ -168,6 +168,7 @@ model Product {
   inquiries      Inquiry[]
   view_count     Int                @default(0)  // 조회순 (새로운 필드)
   download_count Int                @default(0)  // 인기순 (새로운 필드)
+  like_count     Int                @default(0)  // 좋아요 수
   created_at     DateTime           @default(now()) // 최신순
   updated_at     DateTime?
 
