@@ -10,6 +10,14 @@
   gap: 12px;
   padding: 0 0.5rem; /* 버튼 패딩과 맞춤 */
   margin-bottom: 2.5rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.logoWrapper:hover {
+  opacity: 0.8;
 }
 
 .logoWrapper img {

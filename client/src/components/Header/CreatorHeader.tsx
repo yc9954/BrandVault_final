@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom'; // 💡 NavLink를 임포트합니다.
+import { NavLink, Link } from 'react-router-dom'; // 💡 NavLink와 Link를 임포트합니다.
 import logo from '../../logo.png'; 
 import styles from './CreatorHeader.module.css';
 import type { ContentName } from '../../types';
@@ -59,11 +59,11 @@ function CreatorHeader() {
     
     return (
         <header className={styles.sidebarInner}>
-            {/* Binu AI 로고 (변경 없음) */}
-            <div className={styles.logoWrapper}>
+            {/* Binu AI 로고 - 클릭 시 Product Library로 이동 */}
+            <Link to="/creator" className={styles.logoWrapper}>
                 <img src={logo} alt="Binu AI Logo" />
                 <span>Binu AI</span>
-            </div>
+            </Link>
 
             {/* 네비게이션 (경로 추가) */}
             <nav>

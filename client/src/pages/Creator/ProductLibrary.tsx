@@ -324,12 +324,12 @@ function ProductLibrary() {
         {isInitialLoading ? <div className={styles.loading}>브랜드 로딩 중...</div> : featuredBrands.length > 0 && (
           <div className={styles.horizontalScrollContainer}>
             {featuredBrands.map((brand) => (
-              <div key={brand.brand_id} className={styles.brandCard} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}> 
+              <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.brandCard} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}> 
                 <div className={styles.brandLogoPlaceholder}>
                   <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{brand.brand_name}</div>
                 </div>
                 <p className={styles.brandAssetCount}>{brand.asset_count} Assets Available</p>
-              </div>
+              </Link>
             ))}
           </div>
         )}
