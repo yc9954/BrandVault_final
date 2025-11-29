@@ -38,6 +38,7 @@ function CreateProject() {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [filteredProducts, setFilteredProducts] = useState<PurchasedProduct[]>([]);
   const [showInsertionInfoModal, setShowInsertionInfoModal] = useState(false);
+  const [projectName, setProjectName] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -250,9 +251,9 @@ function CreateProject() {
       }
 
       // 프로젝트 생성 (processing 상태로 생성)
-      const projectName = `프로젝트 ${new Date().toLocaleDateString()}`;
+      const finalProjectName = projectName.trim() || `프로젝트 ${new Date().toLocaleDateString()}`;
       const project = await createProject({
-        projectName: projectName,
+        projectName: finalProjectName,
         videoPath: null, // 비디오 삽입 완료 후 업데이트됨
         productIds: selectedProducts,
         status: 'processing',
@@ -297,7 +298,7 @@ function CreateProject() {
 
       // 프로젝트 업데이트 (완료 상태로)
       await createProject({
-        projectName: projectName,
+        projectName: finalProjectName,
         videoPath: videoPath,
         productIds: selectedProducts,
         status: 'completed',
@@ -361,6 +362,16 @@ function CreateProject() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>새 프로젝트 생성</h1>
+      </div>
+      
+      <div className={styles.projectNameSection}>
+        <input
+          type="text"
+          className={styles.projectNameInput}
+          placeholder="프로젝트 이름을 입력하세요"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+        />
       </div>
 
       {/* 에러 모달 */}

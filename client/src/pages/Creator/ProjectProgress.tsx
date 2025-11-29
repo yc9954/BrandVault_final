@@ -15,43 +15,86 @@ function ProjectProgress() {
   const [error, setError] = useState<string | null>(null);
   const [project, setProject] = useState<any>(null);
 
-  // 작업 상태 폴링
+  // 작업 상태 SSE 연결
   useEffect(() => {
     if (!jobId) {
-      setError('작업 ID가 없습니다.');
+      // jobId가 없으면 DB에서 직접 progress 가져오기
+      if (id) {
+        const loadProgress = async () => {
+          try {
+            const response = await fetchProjectById(parseInt(id));
+            if (response.data.status && response.data.progress !== undefined) {
+              setStatus(response.data.status as 'pending' | 'processing' | 'completed' | 'failed');
+              setProgress(response.data.progress || 0);
+            }
+          } catch (err) {
+            console.error('프로젝트 진행률 로드 실패:', err);
+          }
+        };
+        loadProgress();
+      }
       return;
     }
 
-    const pollStatus = async () => {
-      try {
-        const result = await getVideoInsertionStatus(jobId);
-        setStatus(result.status);
-        setProgress(result.progress);
+    const sseUrl = `${process.env.REACT_APP_API_URL}/api/video-insertion/status/${jobId}`;
+    console.log(`[ProjectProgress] SSE 연결 시도: jobId=${jobId}, URL=${sseUrl}`);
 
-        if (result.status === 'completed' && result.result) {
+    const eventSource = new EventSource(sseUrl, { withCredentials: true });
+
+    eventSource.onopen = () => {
+      console.log(`[ProjectProgress] SSE 연결 성공: jobId=${jobId}`);
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        console.log(`[ProjectProgress] 메시지 수신:`, event.data);
+        const data = JSON.parse(event.data);
+        setStatus(data.status);
+        setProgress(data.progress || 0);
+
+        if (data.status === 'completed') {
           // 완료 시 프로젝트 상세 페이지로 이동
           setTimeout(() => {
             navigate(`/creator/project/${id}`);
           }, 2000);
-        } else if (result.status === 'failed') {
-          setError(result.error || '작업이 실패했습니다.');
+        } else if (data.status === 'failed') {
+          setError(data.error || '작업이 실패했습니다.');
         }
       } catch (err) {
-        console.error('상태 조회 실패:', err);
-        setError((err as Error).message || '상태 조회에 실패했습니다.');
+        console.error('[ProjectProgress] 메시지 파싱 실패:', err, '원본 데이터:', event.data);
       }
     };
 
-    // 즉시 한 번 실행
-    pollStatus();
+    eventSource.onerror = (err) => {
+      console.error(`[ProjectProgress] SSE 연결 오류: jobId=${jobId}`, {
+        error: err,
+        readyState: eventSource.readyState,
+      });
+      
+      // 연결 실패 시 DB에서 직접 가져오기
+      if (eventSource.readyState === EventSource.CLOSED && id) {
+        const loadProgress = async () => {
+          try {
+            const response = await fetchProjectById(parseInt(id));
+            if (response.data.status && response.data.progress !== undefined) {
+              setStatus(response.data.status as 'pending' | 'processing' | 'completed' | 'failed');
+              setProgress(response.data.progress || 0);
+            }
+          } catch (err) {
+            console.error('프로젝트 진행률 로드 실패:', err);
+          }
+        };
+        loadProgress();
+      }
+    };
 
-    // 2초마다 폴링
-    const interval = setInterval(pollStatus, 2000);
-
-    return () => clearInterval(interval);
+    return () => {
+      console.log(`[ProjectProgress] SSE 연결 종료: jobId=${jobId}`);
+      eventSource.close();
+    };
   }, [jobId, id, navigate]);
 
-  // 프로젝트 정보 로드
+  // 프로젝트 정보 로드 (초기 진행률도 함께)
   useEffect(() => {
     if (!id) return;
 
@@ -59,6 +102,12 @@ function ProjectProgress() {
       try {
         const response = await fetchProjectById(parseInt(id));
         setProject(response.data);
+        
+        // 초기 진행률 설정 (jobId가 없거나 SSE 연결 전에 표시)
+        if (response.data.status && response.data.progress !== undefined) {
+          setStatus(response.data.status as 'pending' | 'processing' | 'completed' | 'failed');
+          setProgress(response.data.progress || 0);
+        }
       } catch (err) {
         console.error('프로젝트 로드 실패:', err);
       }

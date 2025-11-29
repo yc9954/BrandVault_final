@@ -287,6 +287,9 @@ export interface UserProject {
     description?: string;
     created_at: string;
     thumbnail_url?: string;
+    status?: string;
+    progress?: number;
+    job_id?: string;
     products_used: any[];
 }
 
@@ -312,6 +315,9 @@ export interface ProjectDetail {
     created_at: string;
     thumbnail_url?: string;
     videoUrl?: string | null;
+    status?: string;
+    progress?: number;
+    job_id?: string;
     products_used: Array<{
         product_id: number;
         product_name: string;
@@ -337,6 +343,23 @@ export const fetchProjectById = async (projectId: number): Promise<ProjectDetail
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: '프로젝트를 불러오는데 실패했습니다.' }));
         throw new Error(errorData.message || '프로젝트를 불러오는데 실패했습니다.');
+    }
+
+    return response.json();
+};
+
+/**
+ * 프로젝트 삭제
+ */
+export const deleteProject = async (projectId: number): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '프로젝트 삭제에 실패했습니다.' }));
+        throw new Error(errorData.message || '프로젝트 삭제에 실패했습니다.');
     }
 
     return response.json();

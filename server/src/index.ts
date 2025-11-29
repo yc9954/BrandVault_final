@@ -11,6 +11,7 @@ import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
 import profileRoutes from './routes/profileRotues.js'
 import videoInsertRoutes from './routes/videoInsertRoutes.js';
+import { cleanupInterruptedJobs } from './services/videoInsertJobService.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -41,6 +42,13 @@ app.use("/api/splat", splatRoutes);
 app.use('/api/brands', brandRoutes);
 app.use("/api/file", fileRoutes);
 app.use("/api/video-insertion", videoInsertRoutes);
+
+// 서버 시작 시 중단된 작업 정리
+cleanupInterruptedJobs().then(() => {
+  console.log('[Server] 중단된 작업 정리 완료');
+}).catch((error) => {
+  console.error('[Server] 중단된 작업 정리 실패:', error);
+});
 
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);

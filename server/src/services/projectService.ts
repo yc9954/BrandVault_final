@@ -1,5 +1,5 @@
 import { prisma } from '../db.js'
-import { getSignedUrl } from './fileService.js'
+import { getSignedUrl, deleteFile } from './fileService.js'
 
 export const getUserProjects = async (userId: number) => {
     const projects = await prisma.project.findMany({
@@ -151,5 +151,62 @@ export const getProjectById = async (projectId: number, userId: number) => {
         ...project,
         videoUrl,
         products_used: productsWithUrls,
+        status: project.status,
+        progress: project.progress,
+        job_id: project.job_id,
     };
+}
+
+/**
+ * 프로젝트 삭제
+ */
+export const deleteProject = async (projectId: number, userId: number) => {
+    // 프로젝트가 존재하고 사용자가 소유자인지 확인
+    const project = await prisma.project.findUnique({
+        where: { project_id: projectId },
+        select: { 
+            creator_id: true,
+            thumbnail_url: true,
+            job_id: true,
+            status: true,
+        },
+    });
+
+    if (!project) {
+        throw new Error('Project not found');
+    }
+
+    if (project.creator_id !== userId) {
+        throw new Error('Unauthorized: You do not have permission to delete this project');
+    }
+
+    // 진행 중인 작업이 있으면 jobStatusMap에서 제거 (작업은 계속 실행되지만 상태 조회는 불가능)
+    if (project.job_id && project.status === 'processing') {
+        try {
+            const { cancelJob } = await import('./videoInsertJobService.js');
+            cancelJob(project.job_id);
+            console.log(`[DeleteProject] 진행 중인 작업 ${project.job_id} 취소됨`);
+        } catch (error) {
+            console.error(`[DeleteProject] 작업 취소 실패: ${project.job_id}`, error);
+            // 작업 취소 실패해도 프로젝트 삭제는 진행
+        }
+    }
+
+    // GCS 파일 삭제 (thumbnail_url이 있으면)
+    if (project.thumbnail_url) {
+        try {
+            await deleteFile(project.thumbnail_url);
+            console.log(`[DeleteProject] GCS 파일 삭제 성공: ${project.thumbnail_url}`);
+        } catch (error) {
+            console.error(`[DeleteProject] GCS 파일 삭제 실패: ${project.thumbnail_url}`, error);
+            // GCS 삭제 실패해도 DB 삭제는 진행 (에러 로그만 남김)
+        }
+    }
+
+    // 프로젝트 삭제 (관계된 데이터는 CASCADE로 자동 삭제)
+    await prisma.project.delete({
+        where: { project_id: projectId },
+    });
+
+    return { success: true };
 }

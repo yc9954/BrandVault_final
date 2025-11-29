@@ -63,3 +63,31 @@ export const handleGetProjectById = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message || '프로젝트 조회에 실패했습니다.'});
     }
 };
+
+export const handleDeleteProject = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { userId?: number; brandId?: number } | undefined;
+        const userId = user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: '유저 id를 찾을 수 없습니다.'});
+        }
+
+        const projectId = parseInt(req.params.id as string);
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'Invalid project ID.' });
+        }
+
+        await projectService.deleteProject(projectId, userId);
+        res.status(200).json({ success: true, message: '프로젝트가 삭제되었습니다.' });
+    } catch(error) {
+        const message = (error as Error).message;
+        if (message.includes('Project not found')) {
+            return res.status(404).json({ message });
+        }
+        if (message.includes('Unauthorized')) {
+            return res.status(403).json({ message });
+        }
+        console.error('프로젝트 삭제 에러:', error);
+        res.status(500).json({ message: (error as Error).message || '프로젝트 삭제에 실패했습니다.'});
+    }
+};

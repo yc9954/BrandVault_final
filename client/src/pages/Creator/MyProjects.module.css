@@ -66,6 +66,42 @@
     box-shadow: 0 4px 12px rgba(159, 84, 255, 0.4);
 }
 
+/* 검색 바 */
+.searchBox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    transition: all 0.2s ease;
+}
+
+.searchBox:focus-within {
+    background-color: #fff;
+    border-color: #9F54FF;
+    box-shadow: 0 0 0 3px rgba(159, 84, 255, 0.1);
+}
+
+.searchBox svg {
+    flex-shrink: 0;
+}
+
+.searchBox input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 1rem;
+    color: #1a1a1a;
+}
+
+.searchBox input::placeholder {
+    color: #999;
+}
+
 .error {
     background-color: #fff0f0;
     color: #ff3860;
@@ -147,10 +183,15 @@
     margin-left: 0; /* 좌우 마진 제거 (메인 컨테이너에서 처리) */
 }
 
+.projectCardWrapper {
+    position: relative;
+}
+
 .projectCardLink {
     text-decoration: none;
     color: inherit;
     display: block;
+    cursor: pointer;
 }
 
 .projectCard {
@@ -160,6 +201,34 @@
     overflow: visible; /* 툴팁이 카드 밖으로 나갈 수 있도록 */
     transition: all 0.2s ease;
     cursor: pointer;
+    position: relative;
+}
+
+.deleteButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.deleteButton:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.deleteButton:active {
+    transform: scale(0.95);
 }
 
 .projectCard:hover {
@@ -224,6 +293,78 @@
     font-size: 0.875rem;
     font-weight: 600;
     text-align: center;
+}
+
+/* 삭제 확인 모달 */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.modalMessage {
+    margin: 0 0 2rem 0;
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.modalButtons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.modalButtonCancel,
+.modalButtonConfirm {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modalButtonCancel {
+    background-color: #f0f0f0;
+    color: #1a1a1a;
+}
+
+.modalButtonCancel:hover {
+    background-color: #e0e0e0;
+}
+
+.modalButtonConfirm {
+    background-color: #ff3860;
+    color: white;
+}
+
+.modalButtonConfirm:hover {
+    background-color: #e0314f;
 }
 
 .projectInfo {
