@@ -402,3 +402,71 @@ export const toggleLikeProduct = async (productId: number): Promise<{ liked: boo
     const result = await response.json();
     return result.data;
 };
+
+/**
+ * 브랜드 에셋 목록 조회
+ */
+export const fetchBrandAssets = async (): Promise<any[]> => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_BASE_URL}/api/brands/assets`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '에셋 목록을 불러오는데 실패했습니다.' }));
+        throw new Error(errorData.message || '에셋 목록을 불러오는데 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+};
+
+/**
+ * 에셋 삭제
+ */
+export const deleteAsset = async (productId: number): Promise<{ success: boolean; message: string }> => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '에셋 삭제에 실패했습니다.' }));
+        throw new Error(errorData.message || '에셋 삭제에 실패했습니다.');
+    }
+
+    return response.json();
+};
+
+/**
+ * 에셋 추가
+ */
+export const createAsset = async (
+    productName: string,
+    category: string,
+    size: string,
+    imageFile: File
+): Promise<any> => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    const formData = new FormData();
+    formData.append('productName', productName);
+    formData.append('category', category);
+    formData.append('size', size);
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/api/products`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '에셋 추가에 실패했습니다.' }));
+        throw new Error(errorData.message || '에셋 추가에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data;
+};

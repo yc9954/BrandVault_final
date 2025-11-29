@@ -78,20 +78,14 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  align-items: center;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .buttonGroup.expanded {
   justify-content: center;
-  gap: 0;
-}
-
-.buttonGroup.expanded .button.primary {
-  width: 100%;
-  max-width: 300px;
-  padding: 16px 32px;
-  font-size: 1.1rem;
-  transform: scale(1.05);
+  gap: 0.5rem;
 }
 
 .button {
@@ -103,24 +97,70 @@
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  flex: 1;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.button.centered {
-  margin: 0 auto;
+.button.active {
+  flex: 1;
+  max-width: 300px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.button.fadeOut {
-  animation: fadeOutSlide 0.4s ease-out forwards;
+.button.slideOutLeft {
+  animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
 }
 
-@keyframes fadeOutSlide {
+.button.slideOutRight {
+  animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideOutLeft {
   from {
     opacity: 1;
     transform: translateX(0) scale(1);
+    max-width: 200px;
+    margin-right: 1rem;
   }
   to {
     opacity: 0;
-    transform: translateX(50px) scale(0.8);
+    transform: translateX(-100px) scale(0.8);
+    max-width: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-width: 200px;
+    margin-left: 1rem;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8);
+    max-width: 0;
     width: 0;
     padding: 0;
     margin: 0;
@@ -232,6 +272,29 @@
 .input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.cancelButton {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease-out 0.3s both;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.cancelButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
 }
 
 /* 여기에 있었던 .homePageImageButton 및 

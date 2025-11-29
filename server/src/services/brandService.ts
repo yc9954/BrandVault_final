@@ -174,3 +174,41 @@ export const fetchBrandById = async (brandId: number): Promise<{
         throw error;
     }
 };
+
+/**
+ * 인증된 브랜드의 모든 에셋 목록을 조회합니다.
+ */
+export const getBrandAssets = async (brandId: number): Promise<(import('@prisma/client').Product & { signedImageUrl: string | null })[]> => {
+    try {
+        // 해당 브랜드의 모든 에셋 조회
+        const products = await prisma.product.findMany({
+            where: { brand_id: brandId },
+            orderBy: {
+                created_at: 'desc',
+            },
+        });
+
+        // 에셋 이미지 Signed URL 생성
+        const productsWithUrls = await Promise.all(
+            products.map(async (product) => {
+                let signedImageUrl = null;
+                if (product.image_url) {
+                    try {
+                        signedImageUrl = await getSignedUrl(product.image_url);
+                    } catch (error) {
+                        console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
+                    }
+                }
+                return {
+                    ...product,
+                    signedImageUrl: signedImageUrl,
+                };
+            })
+        );
+
+        return productsWithUrls;
+    } catch (error) {
+        console.error('Error fetching brand assets:', error);
+        throw error;
+    }
+};

@@ -1,0 +1,71 @@
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0.5rem;
+  margin-top: 1rem;
+  margin-bottom: 2.5rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.logoWrapper:hover {
+  opacity: 0.8;
+}
+
+.logoWrapper img {
+  height: 32px;
+}
+
+.logoWrapper span {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.headerNavList {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.navButton:hover {
+  background-color: #2a2a2a;
+  color: #FFFFFF;
+}
+
+.navButton.active {
+  background-color: #9F54FF;
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.2);
+}
+
+.navIcon {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+}
+

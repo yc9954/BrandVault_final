@@ -490,3 +490,83 @@ export const toggleLikeProduct = async (creatorId: number, productId: number): P
         throw new Error('Failed to toggle like.');
     }
 };
+
+/**
+ * 에셋 삭제 (브랜드 소유 확인 후 삭제)
+ */
+export const deleteProduct = async (productId: number, brandId: number): Promise<void> => {
+    try {
+        // 에셋이 존재하고 브랜드가 소유자인지 확인
+        const product = await prisma.product.findUnique({
+            where: { product_id: productId },
+            select: {
+                brand_id: true,
+                image_url: true,
+                model_3d_url: true,
+            },
+        });
+
+        if (!product) {
+            throw new Error('Product not found');
+        }
+
+        if (product.brand_id !== brandId) {
+            throw new Error('Unauthorized: You do not have permission to delete this product');
+        }
+
+        // GCS 파일 삭제
+        const { deleteFile } = await import('./fileService.js');
+        if (product.image_url) {
+            try {
+                await deleteFile(product.image_url);
+            } catch (error) {
+                console.error(`GCS 이미지 파일 삭제 실패: ${product.image_url}`, error);
+            }
+        }
+        if (product.model_3d_url) {
+            try {
+                await deleteFile(product.model_3d_url);
+            } catch (error) {
+                console.error(`GCS 모델 파일 삭제 실패: ${product.model_3d_url}`, error);
+            }
+        }
+
+        // 에셋 삭제 (관계된 데이터는 CASCADE로 자동 삭제)
+        await prisma.product.delete({
+            where: { product_id: productId },
+        });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        throw error;
+    }
+};
+
+/**
+ * 에셋 추가 (이미지만)
+ */
+export const createProduct = async (
+    brandId: number,
+    productName: string,
+    category: string,
+    size: string,
+    imageUrl: string
+): Promise<import('@prisma/client').Product> => {
+    try {
+        const product = await prisma.product.create({
+            data: {
+                brand_id: brandId,
+                product_name: productName,
+                category: category,
+                size: size,
+                image_url: imageUrl,
+                color: null,
+                model_3d_url: null,
+            },
+        });
+
+        return product;
+    } catch (error) {
+        console.error('Error creating product:', error);
+        throw new Error('Failed to create product.');
+    }
+};

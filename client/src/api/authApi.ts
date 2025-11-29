@@ -23,10 +23,13 @@ export const loginCreator = async (
 /**
  * Brand 로그인
  */
-export const loginBrand = async (): Promise<{ message: string }> => {
+export const loginBrand = async (
+  email: string,
+  password: string
+): Promise<{ message: string }> => {
   const response = await axios.post(
     `${API_BASE_URL}/api/auth/login/brand`,
-    {},
+    { email, password },
     {
       withCredentials: true,
     }

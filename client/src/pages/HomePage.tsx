@@ -2,7 +2,8 @@
 
 import { useState } from 'react'; // 1. useState 훅 추가
 import { useCreatorNavigation } from '../hooks/useCreatorNavigation';
-import { loginCreator } from '../api/authApi'; // 2. 로그인 API 함수 import
+import { useNavigate } from 'react-router-dom';
+import { loginCreator, loginBrand } from '../api/authApi'; // 2. 로그인 API 함수 import
 
 import logo from '../logo.png'
 import SocialLoginButton from '../components/Button/ImageButton'
@@ -14,24 +15,45 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 
 
 function HomePage() {
   const { goToCreator } = useCreatorNavigation();
+  const navigate = useNavigate();
   
   // 상태 관리
-  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [activeLoginType, setActiveLoginType] = useState<'none' | 'creator' | 'brand'>('none');
   const [isLoading, setIsLoading] = useState(false);
+  const [isBrandLoading, setIsBrandLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [brandEmail, setBrandEmail] = useState('');
+  const [brandPassword, setBrandPassword] = useState('');
 
-  // 첫 번째 클릭: 로그인 폼 표시
+  // 크리에이터 로그인 버튼 클릭
   const handleCreatorLoginClick = () => {
-    if (!showLoginForm) {
-      setShowLoginForm(true);
+    if (activeLoginType === 'none') {
+      setActiveLoginType('creator');
       setError(null);
-      return;
     }
   };
 
-  // 두 번째 클릭: 실제 로그인 실행
+  // 브랜드 로그인 버튼 클릭
+  const handleBrandLoginClick = () => {
+    if (activeLoginType === 'none') {
+      setActiveLoginType('brand');
+      setError(null);
+    }
+  };
+
+  // 로그인 폼 닫기 (두 버튼 다시 표시)
+  const handleCloseLogin = () => {
+    setActiveLoginType('none');
+    setEmail('');
+    setPassword('');
+    setBrandEmail('');
+    setBrandPassword('');
+    setError(null);
+  };
+
+  // 크리에이터 로그인 제출
   const handleCreatorLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -76,6 +98,31 @@ function HomePage() {
     // 백엔드의 Google OAuth 엔드포인트로 리다이렉트
     window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
+
+  // 브랜드 로그인 제출
+  const handleBrandLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setIsBrandLoading(true);
+    setError(null);
+    
+    if (!brandEmail || !brandPassword) {
+      setError('이메일과 비밀번호를 입력해주세요.');
+      setIsBrandLoading(false);
+      return;
+    }
+    
+    try {
+      await loginBrand(brandEmail, brandPassword);
+      navigate('/brand');
+    } catch (err: any) {
+      console.error("Brand login failed:", err);
+      const errorMessage = err.response?.data?.message || err.message || "로그인에 실패했습니다. 다시 시도해주세요.";
+      setError(errorMessage);
+    } finally {
+      setIsBrandLoading(false);
+    }
+  };
   
   return (
     <div className={styles.container}>
@@ -96,10 +143,13 @@ function HomePage() {
         </p>
 
         <div className={styles.loginSection}>
-          <form onSubmit={showLoginForm ? handleCreatorLoginSubmit : (e) => { e.preventDefault(); handleCreatorLoginClick(); }} className={styles.loginFormWrapper}>
+          <form 
+            onSubmit={activeLoginType === 'creator' ? handleCreatorLoginSubmit : activeLoginType === 'brand' ? handleBrandLoginSubmit : (e) => { e.preventDefault(); }} 
+            className={styles.loginFormWrapper}
+          >
             {/* 입력 폼 (조건부 렌더링) */}
-            {showLoginForm && (
-              <div className={`${styles.loginForm} ${showLoginForm ? styles.show : ''}`}>
+            {activeLoginType === 'creator' && (
+              <div className={`${styles.loginForm} ${styles.show}`}>
                 <div className={styles.inputGroup}>
                   <input
                     type="email"
@@ -124,21 +174,62 @@ function HomePage() {
               </div>
             )}
 
+            {activeLoginType === 'brand' && (
+              <div className={`${styles.loginForm} ${styles.show}`}>
+                <div className={styles.inputGroup}>
+                  <input
+                    type="email"
+                    placeholder="이메일"
+                    value={brandEmail}
+                    onChange={(e) => setBrandEmail(e.target.value)}
+                    className={styles.input}
+                    disabled={isBrandLoading}
+                    required
+                    autoFocus
+                  />
+                  <input
+                    type="password"
+                    placeholder="비밀번호"
+                    value={brandPassword}
+                    onChange={(e) => setBrandPassword(e.target.value)}
+                    className={styles.input}
+                    disabled={isBrandLoading}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             {/* 버튼 그룹 */}
-            <div className={`${styles.buttonGroup} ${showLoginForm ? styles.expanded : ''}`}>
+            <div className={`${styles.buttonGroup} ${activeLoginType !== 'none' ? styles.expanded : ''}`}>
               <button 
-                type="submit"
-                className={`${styles.button} ${styles.primary} ${showLoginForm ? styles.centered : ''}`}
-                disabled={isLoading}
+                type={activeLoginType === 'creator' ? 'submit' : 'button'}
+                className={`${styles.button} ${styles.primary} ${activeLoginType === 'creator' ? styles.active : ''} ${activeLoginType === 'brand' ? styles.slideOutLeft : ''}`}
+                onClick={activeLoginType === 'none' ? handleCreatorLoginClick : undefined}
+                disabled={isLoading && activeLoginType === 'creator'}
               >
-                {isLoading ? '로그인 중...' : '크리에이터 로그인'}
+                {isLoading && activeLoginType === 'creator' ? '로그인 중...' : '크리에이터 로그인'}
               </button>
-              {!showLoginForm && (
-                <button 
+              
+              <button 
+                type={activeLoginType === 'brand' ? 'submit' : 'button'}
+                className={`${styles.button} ${styles.secondary} ${activeLoginType === 'brand' ? styles.active : ''} ${activeLoginType === 'creator' ? styles.slideOutRight : ''}`}
+                onClick={activeLoginType === 'none' ? handleBrandLoginClick : undefined}
+                disabled={isBrandLoading && activeLoginType === 'brand'}
+              >
+                {isBrandLoading && activeLoginType === 'brand' ? '로그인 중...' : '브랜드 로그인'}
+              </button>
+
+              {activeLoginType !== 'none' && (
+                <button
                   type="button"
-                  className={`${styles.button} ${styles.secondary} ${styles.fadeOut}`}
+                  className={styles.cancelButton}
+                  onClick={handleCloseLogin}
                 >
-                  광고주 로그인
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                 </button>
               )}
             </div>

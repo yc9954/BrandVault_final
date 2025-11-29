@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts, searchProducts, saveProduct, toggleLikeProduct } from '../controllers/productController.js'
+import multer from 'multer';
+import { getProductList, getProductDetails, getProductDownloadUrl, handleGetUserProducts, searchProducts, saveProduct, toggleLikeProduct, deleteProduct, createProduct } from '../controllers/productController.js'
 import { authenticateToken } from '../midwares/authMiddleware.js';
+
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -165,4 +168,6 @@ router.get('/:id', getProductDetails);
 router.get('/:id/download', getProductDownloadUrl);
 router.post('/:id/save', authenticateToken, saveProduct);
 router.post('/:id/like', authenticateToken, toggleLikeProduct);
+router.delete('/:id', authenticateToken, deleteProduct);
+router.post('/', authenticateToken, upload.single('image'), createProduct);
 export default router;

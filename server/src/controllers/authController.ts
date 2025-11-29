@@ -41,16 +41,24 @@ export const handleCreatorLogin = async(req: Request, res: Response) => {
 };
 
 export const handleBrandLogin = async(req: Request, res: Response) => {
-    // const { email, password } = req.body;
+    const { email, password } = req.body;
+    
     try {
-        const token = await authService.loginBrand();
+        // 이메일과 비밀번호가 제공되었는지 확인
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: '이메일과 비밀번호를 입력해주세요.' 
+            });
+        }
+
+        const token = await authService.loginBrand({ email, password });
 
         res.cookie('jwt', token, getCookieOptions());
 
         res.status(200).json({message: '로그인 성공'});
     } catch (error: any) {
         console.error('로그인 에러:', error);
-        res.status(401).json({ mesasge: error.message || '로그인 중 오류 발생'});
+        res.status(401).json({ message: error.message || '로그인 중 오류 발생'});
     }
 };
 

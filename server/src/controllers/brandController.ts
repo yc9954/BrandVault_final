@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 // 💡 Service 함수 임포트
-import { fetchFeatureBrandList, searchBrands, fetchBrandById } from '../services/brandService.js'; 
+import * as brandService from '../services/brandService.js'; 
 
 /**
  * Featured Brand 목록을 반환하는 Controller 함수.
@@ -9,7 +9,7 @@ import { fetchFeatureBrandList, searchBrands, fetchBrandById } from '../services
 export const getFeatureBrandList = async (req: Request, res: Response) => {
     try {
         // Service 호출
-        const brands = await fetchFeatureBrandList(); 
+        const brands = await brandService.fetchFeatureBrandList(); 
 
         res.status(200).json({
             data: brands,
@@ -37,7 +37,7 @@ export const searchBrandsController = async (req: Request, res: Response) => {
             return res.status(200).json({ data: [] });
         }
 
-        const brands = await searchBrands(keyword.trim(), limit);
+        const brands = await brandService.searchBrands(keyword.trim(), limit);
 
         res.status(200).json({ data: brands });
     } catch (error) {
@@ -57,7 +57,7 @@ export const getBrandById = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid brand ID.' });
         }
 
-        const result = await fetchBrandById(brandId);
+        const result = await brandService.fetchBrandById(brandId);
 
         res.status(200).json({ data: result });
     } catch (error) {
@@ -68,5 +68,26 @@ export const getBrandById = async (req: Request, res: Response) => {
         
         console.error('Error fetching brand by ID:', error);
         res.status(500).json({ message: 'Failed to fetch brand details.' });
+    }
+};
+
+/**
+ * 인증된 브랜드의 모든 에셋 목록을 조회합니다.
+ */
+export const getBrandAssets = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { brandId?: number } | undefined;
+        const brandId = user?.brandId;
+        
+        if (!brandId) {
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
+        }
+
+        const assets = await brandService.getBrandAssets(brandId);
+        
+        res.status(200).json({ data: assets });
+    } catch (error) {
+        console.error('Error fetching brand assets:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to fetch brand assets.' });
     }
 };

@@ -250,3 +250,81 @@ export const toggleLikeProduct = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message || 'Failed to toggle like.' });
     }
 };
+
+/**
+ * 에셋 삭제 (브랜드 전용)
+ */
+export const deleteProduct = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { brandId?: number } | undefined;
+        const brandId = user?.brandId;
+        
+        if (!brandId) {
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
+        }
+
+        const productId = parseInt(req.params.id as string);
+        if (isNaN(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID.' });
+        }
+
+        await productService.deleteProduct(productId, brandId);
+        
+        res.status(200).json({ success: true, message: '에셋이 삭제되었습니다.' });
+    } catch (error) {
+        const message = (error as Error).message;
+        if (message.includes('Product not found')) {
+            return res.status(404).json({ message });
+        }
+        if (message.includes('Unauthorized')) {
+            return res.status(403).json({ message });
+        }
+        console.error('Error deleting product:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to delete product.' });
+    }
+};
+
+/**
+ * 에셋 추가 (브랜드 전용, 이미지만)
+ */
+export const createProduct = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as { brandId?: number } | undefined;
+        const brandId = user?.brandId;
+        
+        if (!brandId) {
+            return res.status(401).json({ message: '인증 정보가 필요합니다.' });
+        }
+
+        const { productName, category, size } = req.body;
+        const imageFile = req.file;
+
+        if (!productName || !category || !size) {
+            return res.status(400).json({ message: '에셋 이름, 카테고리, 사이즈는 필수입니다.' });
+        }
+
+        if (!imageFile) {
+            return res.status(400).json({ message: '이미지 파일이 필요합니다.' });
+        }
+
+        // 이미지 파일인지 확인
+        if (!imageFile.mimetype.startsWith('image/')) {
+            return res.status(400).json({ message: '이미지 파일만 업로드할 수 있습니다.' });
+        }
+
+        // GCS에 업로드
+        const { uploadFile } = await import('../services/fileService.js');
+        const imagePath = await uploadFile(imageFile, `brand-assets/${brandId}/${Date.now()}-${imageFile.originalname}`);
+
+        // DB에 저장
+        const product = await productService.createProduct(brandId, productName, category, size, imagePath);
+
+        res.status(201).json({ 
+            data: product,
+            message: '에셋이 추가되었습니다.' 
+        });
+    } catch (error) {
+        console.error('Error creating product:', error);
+        res.status(500).json({ message: (error as Error).message || 'Failed to create product.' });
+    }
+};
