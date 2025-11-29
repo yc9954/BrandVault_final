@@ -249,6 +249,15 @@ export const getUserProducts = async (
             product: {
                 include: {
                     brand: { select: { brand_name: true } },
+                    product_assets: {
+                        include: {
+                            master_asset_version: {
+                                select: {
+                                    asset_type: true
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -269,6 +278,11 @@ export const getUserProducts = async (
                 }
             }
 
+            // assetFormats 추출
+            const assetFormats = [...new Set(
+                product.product_assets.map(pa => pa.master_asset_version.asset_type)
+            )].map(type => type.toLowerCase()); // 소문자로 변환
+
             return {
                 purchaseId: purchase.purchase_id,
                 productId: product.product_id,
@@ -277,6 +291,7 @@ export const getUserProducts = async (
                 viewCount: product.view_count,
                 downloadCount: product.download_count,
                 signedImageUrl,
+                assetFormats, // 에셋 형식 추가
             };
         })
     );

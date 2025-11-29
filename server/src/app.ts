@@ -9,6 +9,7 @@ import projectRoutes from './routes/projectRoutes.js';
 import fileRoutes from './routes/fileRoutese.js'
 import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
+import videoInsertRoutes from './routes/videoInsertRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 import passport from './config/passport.js';
@@ -66,5 +67,6 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/splat", splatRoutes);
 app.use('/api/brands', brandRoutes);
 app.use("/api/file", fileRoutes);
+app.use("/api/video-insertion", videoInsertRoutes);
 
 export default app;

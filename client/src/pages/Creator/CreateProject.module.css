@@ -444,6 +444,132 @@
   box-shadow: 0 2px 8px rgba(159, 84, 255, 0.3);
 }
 
+/* 비디오 삽입 관련 스타일 */
+.positionHint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(159, 84, 255, 0.9);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 10;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.positionMarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.markerDot {
+  width: 20px;
+  height: 20px;
+  background-color: #9F54FF;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.insertButton {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  background-color: rgba(159, 84, 255, 0.9);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.insertButton:hover {
+  background-color: rgba(159, 84, 255, 1);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 8px rgba(159, 84, 255, 0.4);
+}
+
+.insertButtonActive {
+  background-color: rgba(142, 68, 173, 0.9);
+}
+
+.insertionInfo {
+  background-color: #f8f8ff;
+  border: 2px solid #9F54FF;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.insertionInfo p {
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.positionInfo {
+  margin: 0.5rem 0 0 0;
+  color: #9F54FF;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.loadingMessage {
+  margin: 0;
+  color: #7a7a7a;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.insertProcessButton {
+  padding: 0.75rem 2rem;
+  background-color: #9F54FF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(159, 84, 255, 0.3);
+}
+
+.insertProcessButton:hover:not(:disabled) {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 84, 255, 0.4);
+}
+
+.insertProcessButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
   .container {

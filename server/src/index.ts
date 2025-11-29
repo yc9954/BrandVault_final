@@ -10,6 +10,7 @@ import fileRoutes from './routes/fileRoutese.js'
 import brandRoutes from './routes/brandRoutes.js';
 import splatRoutes from './routes/splatRoutes.js';
 import profileRoutes from './routes/profileRotues.js'
+import videoInsertRoutes from './routes/videoInsertRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -38,7 +39,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/splat", splatRoutes);
 app.use('/api/brands', brandRoutes);
-app.use("/api/file", fileRoutes)
+app.use("/api/file", fileRoutes);
+app.use("/api/video-insertion", videoInsertRoutes);
 
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
