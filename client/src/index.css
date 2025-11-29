@@ -20,3 +20,8 @@ code {
 hr {
   width: 30%
 }
+
+/* 모든 링크에서 밑줄 제거 */
+a {
+  text-decoration: none;
+}

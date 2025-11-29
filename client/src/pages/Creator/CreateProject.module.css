@@ -5,13 +5,12 @@
 
 .container {
   margin: 0;
-  margin-left: -3rem;
-  margin-right: -3rem;
   background-color: white;
   color: #1a1a1a;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  padding: 0 3rem;
+  padding: 0; /* 좌우 패딩 제거 (메인 컨테이너에서 처리) */
   min-height: 100vh;
+  position: relative;
 }
 
 .header {
@@ -222,7 +221,21 @@
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #7a7a7a;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #9F54FF;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .emptyMessage {
@@ -239,7 +252,7 @@
 }
 
 .emptyMessage a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* 액션 바 */

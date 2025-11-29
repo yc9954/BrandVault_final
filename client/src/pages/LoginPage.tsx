@@ -7,14 +7,9 @@ function LoginPage() {
         <p>
             이거는 로그인 페이지임 ㅇㅇ
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <p>
+          (개발용 로그인 페이지입니다)
+        </p>
       </header>
     </div>
   );

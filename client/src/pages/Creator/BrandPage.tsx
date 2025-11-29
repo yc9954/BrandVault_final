@@ -36,7 +36,9 @@ function BrandPage() {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>브랜드 정보를 불러오는 중...</div>
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+        </div>
       </div>
     );
   }
@@ -72,7 +74,7 @@ function BrandPage() {
           <div className={styles.brandDetails}>
             <h1 className={styles.brandName}>{brand.brand_name}</h1>
             <p className={styles.brandStats}>
-              {brand.asset_count || products.length} Assets Available
+              등록된 에셋: {brand.asset_count || products.length}개
             </p>
           </div>
         </div>
@@ -80,7 +82,7 @@ function BrandPage() {
 
       {/* 에셋 목록 섹션 */}
       <section className={styles.productsSection}>
-        <h2 className={styles.sectionTitle}>Products</h2>
+        <h2 className={styles.sectionTitle}>에셋 목록</h2>
         {products.length === 0 ? (
           <p className={styles.noProducts}>이 브랜드의 에셋이 없습니다.</p>
         ) : (
@@ -103,10 +105,10 @@ function BrandPage() {
                   </div>
                   <div className={styles.cardContent}>
                     <h3>{product.product_name}</h3>
-                    <p className={styles.cardSponsor}>Sponsored by {product.brand?.brand_name || brand.brand_name}</p>
+                    <p className={styles.cardSponsor}>{product.brand?.brand_name || brand.brand_name} 제공</p>
                     <div className={styles.cardTags}>
                       <span className={styles.tag}>{product.category}</span>
-                      <span className={styles.tagPrice}>${product.pricePerKView || 'N/A'}/1K views</span>
+                      <span className={styles.tagPrice}>1천 뷰당 ${product.pricePerKView || 'N/A'}</span>
                     </div>
                   </div>
                 </Link>

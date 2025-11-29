@@ -297,7 +297,7 @@ function SplatViewer({ jobId, onClose }: SplatViewerProps) {
   return (
     <div className="splat-viewer-container">
       <div className="viewer-header">
-        <h2>Splat Viewer</h2>
+        <h2>Splat 뷰어</h2>
         {onClose && (
           <button className="close-btn" onClick={onClose}>
             ✕
@@ -309,7 +309,6 @@ function SplatViewer({ jobId, onClose }: SplatViewerProps) {
         {loading && (
           <div className="loading">
             <div className="spinner"></div>
-            <p>로딩 중...</p>
           </div>
         )}
         

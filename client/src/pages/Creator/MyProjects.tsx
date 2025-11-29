@@ -64,21 +64,24 @@ function MyProjects() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.header}>
-                <div>
-                    <h1 className={styles.title}>내 프로젝트</h1>
-                    <p className={styles.subtitle}>제작한 프로젝트 목록입니다.</p>
+            <div className={styles.stickyHeader}>
+                <div className={styles.header}>
+                    <div>
+                        <h1 className={styles.title}>내 프로젝트</h1>
+                    </div>
+                    <Link to="/creator/project/create" className={styles.createButton}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
+                            <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
+                        </svg>
+                        새 프로젝트
+                    </Link>
                 </div>
-                <Link to="/creator/project/create" className={styles.createButton}>
-                    <svg xmlns="http://www.w3.org/2000/svg" height={20} width={20} viewBox="0 0 48 48" fill="currentColor">
-                        <path d="M22.5 38V25.5H10v-3h12.5V10h3v12.5H38v3H25.5V38Z"/>
-                    </svg>
-                    새 프로젝트
-                </Link>
             </div>
             
             {isLoading ? (
-                <div className={styles.loader}>프로젝트 목록을 불러오는 중...</div>
+                <div className={styles.loader}>
+                    <div className={styles.spinner}></div>
+                </div>
             ) : projects.length === 0 ? (
                 <div className={styles.emptyMessage}>
                     <p>아직 생성된 프로젝트가 없습니다.</p>

@@ -1,11 +1,23 @@
 /* --- START OF FILE pages/MyProjects.module.css --- */
 
 .container {
-    padding: 2rem 3rem;
+    margin: 0;
     background-color: white;
     color: #1a1a1a;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    position: relative; /* sticky 헤더의 기준점 */
+    /* overflow-x: hidden 제거 - sticky 헤더가 제대로 작동하도록 */
+}
+
+.stickyHeader {
+    position: sticky;
+    top: 0; /* sticky 동작을 위해 필수 */
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.9); /* 반투명 배경 */
+    backdrop-filter: blur(10px); /* 블러 효과 추가 */
+    padding: 0; /* 좌우 패딩 제거 (메인 컨테이너에서 처리) */
+    padding-top: 2.5rem; /* Layout의 padding-top 복원 */
 }
 
 .header {
@@ -66,8 +78,21 @@
 .loader {
     text-align: center;
     padding: 3rem;
-    color: #7a7a7a;
-    font-size: 1.1rem;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #9F54FF;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .emptyMessage {
@@ -106,6 +131,7 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
+    margin-left: 0; /* 좌우 마진 제거 (메인 컨테이너에서 처리) */
 }
 
 .projectCard {
@@ -323,7 +349,7 @@
 /* 반응형 */
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 0;
     }
 
     .header {

@@ -59,7 +59,7 @@ function CreatorHeader() {
     
     return (
         <header className={styles.sidebarInner}>
-            {/* Binu AI 로고 - 클릭 시 Product Library로 이동 */}
+            {/* Binu AI 로고 - 클릭 시 탐색 페이지로 이동 */}
             <Link to="/creator" className={styles.logoWrapper}>
                 <img src={logo} alt="Binu AI Logo" />
                 <span>Binu AI</span>
@@ -70,15 +70,26 @@ function CreatorHeader() {
                 <ol className={styles.headerNavList}>
                     {/* 💡 App.tsx에서 /creator/* 로 설정했으므로, 
                          여기서는 /creator, /creator/projects 등 절대 경로를 사용합니다.
-                         index route(Product Library)에는 end={true}를 추가합니다.
+                         index route(탐색)에 end={true}를 추가합니다.
                     */}
-                    {renderNavButton('product', 'Product Library', '/creator', true)}
-                    {renderNavButton('projects', 'My Projects', '/creator/projects')}
-                    {renderNavButton('dashboard', 'Dashboard', '/creator/dashboard')}
-                    {renderNavButton('earnings', 'Earnings', '/creator/earnings')}
-                    {renderNavButton('settings', 'Settings', '/creator/settings')}
+                    {renderNavButton('product', '탐색', '/creator', true)}
+                    {renderNavButton('projects', '내 프로젝트', '/creator/projects')}
+                    {renderNavButton('dashboard', '대시보드', '/creator/dashboard')}
+                    {renderNavButton('earnings', '수익', '/creator/earnings')}
+                    {renderNavButton('settings', '설정', '/creator/settings')}
                 </ol>
             </nav>
+
+            {/* 프로필 버튼 - 항상 하단에 고정 */}
+            <div className={styles.profileSection}>
+                <Link to="/creator/profile" className={styles.profileButton}>
+                    <span className={styles.profileAvatar}>B</span>
+                    <div className={styles.profileText}>
+                        <span className={styles.profileName}>내 프로필</span>
+                        <span className={styles.profileSubtext}>계정 관리</span>
+                    </div>
+                </Link>
+            </div>
         </header>
     );
 }

@@ -197,8 +197,7 @@ function ProductLibrary() {
         {/* 1행: 헤더 섹션 */}
         <header className={styles.header}>
           <div>
-            <h2 className={styles.title}>Product Library</h2>
-            <p className={styles.subtitle}>Browse and favorite products for your next video project</p>
+            <h2 className={styles.title}>탐색</h2>
           </div>
         </header>
 
@@ -210,13 +209,13 @@ function ProductLibrary() {
           </svg>
           <input 
             type="text" 
-            placeholder="Search products or brands..." 
+            placeholder="브랜드 또는 에셋을 검색하세요..." 
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
         </div>
-        <select className={styles.dropdown}><option>All Categories</option></select>
-        <select className={styles.dropdown}><option>Newest</option></select>
+        <select className={styles.dropdown}><option>전체 카테고리</option></select>
+        <select className={styles.dropdown}><option>최신순</option></select>
         </div>
       </div>
 
@@ -226,16 +225,18 @@ function ProductLibrary() {
           {/* 검색된 브랜드 */}
           {searchResults.brands.length > 0 && (
             <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Search Results: Brands</h3>
+              <h3 className={styles.sectionTitle}>브랜드 검색 결과</h3>
               {isSearching ? (
-                <div className={styles.loading}>검색 중...</div>
+                <div className={styles.loading}>
+                  <div className={styles.spinner}></div>
+                </div>
               ) : (
                 <div className={styles.horizontalScrollContainer}>
                   {searchResults.brands.map((brand) => (
                     <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
                       <div className={styles.bannerContent}>
                         <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
-                        <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count}</p>
+                        <p className={styles.bannerSubtitle}>등록된 에셋: {brand.asset_count}개</p>
                       </div>
                     </Link>
                   ))}
@@ -247,9 +248,11 @@ function ProductLibrary() {
           {/* 검색된 에셋 */}
           {searchResults.products.length > 0 && (
             <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Search Results: Products</h3>
+              <h3 className={styles.sectionTitle}>에셋 검색 결과</h3>
               {isSearching ? (
-                <div className={styles.loading}>검색 중...</div>
+                <div className={styles.loading}>
+                  <div className={styles.spinner}></div>
+                </div>
               ) : (
                 <ul className={styles.productGrid}>
                   {searchResults.products.map((product) => (
@@ -292,14 +295,18 @@ function ProductLibrary() {
         <>
           {/* 2행: 와이드 배너 (Brand 데이터 재활용, 가로 스크롤) */}
           <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Featured Brands</h3>
-        {isInitialLoading ? <div className={styles.wideBannerLoading}>배너 로딩 중...</div> : wideBanners.length > 0 && (
+        <h3 className={styles.sectionTitle}>추천 브랜드</h3>
+        {isInitialLoading ? (
+          <div className={styles.wideBannerLoading}>
+            <div className={styles.spinner}></div>
+          </div>
+        ) : wideBanners.length > 0 && (
           <div className={`${styles.horizontalScrollContainer} ${styles.wideBannerScroll}`}>
             {wideBanners.map((brand) => (
               <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.wideBannerItem} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}>
                 <div className={styles.bannerContent}>
                   <h4 className={styles.bannerTitle}>{brand.brand_name}</h4>
-                  <p className={styles.bannerSubtitle}>Assets Available: {brand.asset_count} </p>
+                  <p className={styles.bannerSubtitle}>등록된 에셋: {brand.asset_count}개</p>
                 </div>
               </Link>
             ))}
@@ -309,15 +316,19 @@ function ProductLibrary() {
 
       {/* 4행: 추천 브랜드 목록 (가로 스크롤) */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Popular Brands</h3>
-        {isInitialLoading ? <div className={styles.loading}>브랜드 로딩 중...</div> : featuredBrands.length > 0 && (
+        <h3 className={styles.sectionTitle}>인기 브랜드</h3>
+        {isInitialLoading ? (
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+          </div>
+        ) : featuredBrands.length > 0 && (
           <div className={styles.horizontalScrollContainer}>
             {featuredBrands.map((brand) => (
               <Link key={brand.brand_id} to={`/creator/brand/${brand.brand_id}`} className={styles.brandCard} style={{ backgroundImage: `url(${brand.signedLogoUrl || ''})` }}> 
                 <div className={styles.brandLogoPlaceholder}>
                   <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{brand.brand_name}</div>
                 </div>
-                <p className={styles.brandAssetCount}>{brand.asset_count} Assets Available</p>
+                <p className={styles.brandAssetCount}>등록된 에셋: {brand.asset_count}개</p>
               </Link>
             ))}
           </div>
@@ -326,7 +337,7 @@ function ProductLibrary() {
 
       {/* 5행: 추천 에셋 목록 (무한 스크롤 - 세로 그리드) */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Recommended Assets</h3>
+        <h3 className={styles.sectionTitle}>추천 에셋</h3>
         
         {products.length === 0 && !isFetching && !isInitialLoading ? (<p className={styles.noProducts}>등록된 제품이 없습니다.</p>) : (
           <ul className={styles.productGrid}>
@@ -343,10 +354,10 @@ function ProductLibrary() {
 
                   <div className={styles.cardContent}>
                     <h3>{product.product_name}</h3>
-                    <p className={styles.cardSponsor}>Sponsored by {product.brand.brand_name}</p>
+                    <p className={styles.cardSponsor}>{product.brand.brand_name} 제공</p>
                     <div className={styles.cardTags}>
                       <span className={styles.tag}>{product.category}</span>
-                      <span className={styles.tagPrice}>${product.pricePerKView || 'N/A'}/1K views</span>
+                      <span className={styles.tagPrice}>1천 뷰당 ${product.pricePerKView || 'N/A'}</span>
                     </div>
                   </div>
                 </Link>
@@ -356,8 +367,11 @@ function ProductLibrary() {
         )}
         
         {/* 무한 스크롤 로딩 인디케이터 */}
-        {isFetching && <div className={styles.loadingMore}>에셋을 더 불러오는 중입니다...</div>}
-        {!hasMore && products.length > 0 && <div className={styles.endOfList}>모든 에셋을 불러왔습니다.</div>}
+        {isFetching && (
+          <div className={styles.loadingMore}>
+            <div className={styles.spinner}></div>
+          </div>
+        )}
       </section>
         </>
       )}

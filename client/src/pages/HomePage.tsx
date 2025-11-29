@@ -87,12 +87,12 @@ function HomePage() {
 
       <main className={styles.mainContent}>
         <h1 className={styles.title}>
-          Quasar: Monetize <br />
-          Your Space
+          크리에이터 수익화를 위한 <br />
+          Binu AI
         </h1>
 
         <p className={styles.subtitle}>
-          The AdSense for Short-form Video
+          쇼트폼 영상에 광고를 연결해 수익을 만들어보세요.
         </p>
 
         <div className={styles.loginSection}>
@@ -131,14 +131,14 @@ function HomePage() {
                 className={`${styles.button} ${styles.primary} ${showLoginForm ? styles.centered : ''}`}
                 disabled={isLoading}
               >
-                {isLoading ? '로그인 중...' : 'Creator Login'}
+                {isLoading ? '로그인 중...' : '크리에이터 로그인'}
               </button>
               {!showLoginForm && (
                 <button 
                   type="button"
                   className={`${styles.button} ${styles.secondary} ${styles.fadeOut}`}
                 >
-                  Advertiser Login
+                  광고주 로그인
                 </button>
               )}
             </div>
@@ -149,14 +149,14 @@ function HomePage() {
         {error && <p className={styles.errorMessage}>{error}</p>}
 
         <p className={styles.dividerText}>
-          Or continue with
+          또는 다음 계정으로 계속하기
         </p>
 
         <div className={styles.socialGroup}>
           <SocialLoginButton 
             onClick={handleGoogleLogin} 
             imageSrc={googlelogo} 
-            altText='Google Login' 
+            altText='Google 로그인' 
           />
         </div>
       </main>

@@ -255,7 +255,9 @@ function CreateProject() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>에셋 선택</h2>
           {isLoadingProducts ? (
-            <div className={styles.loading}>에셋 목록을 불러오는 중...</div>
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+            </div>
           ) : products.length === 0 ? (
             <div className={styles.emptyMessage}>
               구매한 에셋이 없습니다. <a href="/creator">에셋을 구매</a>해주세요.

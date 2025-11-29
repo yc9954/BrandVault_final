@@ -25,7 +25,7 @@
 
   /* (중요) 패딩이 너비(260px) 안쪽으로 계산되도록 함 */
   box-sizing: border-box; 
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .mainContent {
@@ -39,6 +39,6 @@
   /* (중요) 패딩이 높이(100vh) 안쪽으로 계산되도록 함 */
   box-sizing: border-box; 
   
-  /* 이 패딩이 사이드바와 콘텐츠 사이의 시각적 여백을 만듭니다. */
-  padding: 2.5rem 3rem; 
+  /* 좌우 패딩 설정 */
+  padding: 0 3rem;
 }

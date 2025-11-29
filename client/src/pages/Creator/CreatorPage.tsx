@@ -9,6 +9,7 @@ import MyProjects from './MyProjects';
 import Dashboard from './Dashboard';
 import Earnings from './Earnings';
 import Settings from './Settings';
+import Profile from './Profile'; // 💡 프로필 페이지 컴포넌트 임포트
 import ProductDetail from './ProductDetail'; // 💡 상세 페이지 컴포넌트 임포트
 import BrandPage from './BrandPage'; // 💡 브랜드 페이지 컴포넌트 임포트
 import CreateProject from './CreateProject'; // 💡 프로젝트 생성 페이지 컴포넌트 임포트
@@ -28,6 +29,7 @@ function CreatorPage() {
                 <Route path="dashboard" element={<Dashboard />} /> 
                 <Route path="earnings" element={<Earnings />} />  
                 <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<Profile />} />
                 
                 {/* path="product/:id"는 /creator/product/:id 경로와 일치합니다. */}
                 <Route path="product/:id" element={<ProductDetail />} />

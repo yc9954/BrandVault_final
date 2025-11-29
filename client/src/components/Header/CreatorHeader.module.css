@@ -9,6 +9,7 @@
   align-items: center;
   gap: 12px;
   padding: 0 0.5rem; /* 버튼 패딩과 맞춤 */
+  margin-top: 1rem;
   margin-bottom: 2.5rem;
   text-decoration: none;
   color: inherit;
@@ -41,7 +42,6 @@
 .navButton {
   display: flex;
   align-items: center;
-  width: 100%;
   padding: 12px 14px;
   border-radius: 8px;
   font-size: 1rem;
@@ -68,4 +68,52 @@
   /* 아이콘과 텍스트의 세로 정렬을 맞추기 위함 */
   display: flex;
   align-items: center;
+}
+
+.profileSection {
+  margin-top: auto;
+  padding: 0 0.5rem;
+}
+
+.profileButton {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  gap: 12px;
+  transition: transform 0.2s ease;
+}
+
+.profileButton:hover {
+  transform: translateY(-2px);
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #9F54FF;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.profileText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.profileName {
+  font-weight: 600;
+}
+
+.profileSubtext {
+  font-size: 0.85rem;
+  color: #555;
 }
