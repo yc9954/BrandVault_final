@@ -145,12 +145,20 @@ async function processVideoInsertionAsync(
     await fs.mkdir(tempDir, { recursive: true });
     console.log(`[VideoInsertJob] Job ${jobId} - Temp directory created: ${tempDir}`);
 
-    // 1. 임시 파일 저장 (5%)
+    // 1. 임시 파일 저장 및 비디오 리샘플링 (5%)
     updateJobStatus(jobId, 'processing', 5);
     await updateProjectProgress(projectId, jobId, 'processing', 5);
+    const originalVideoPath = path.join(tempDir, 'original_input.mp4');
     const videoPath = path.join(tempDir, 'input.mp4');
     const objectImagePath = path.join(tempDir, 'object.png');
-    await fs.writeFile(videoPath, videoFile.buffer);
+    
+    // 원본 비디오 저장
+    await fs.writeFile(originalVideoPath, videoFile.buffer);
+    
+    // 비디오를 16프레임으로 리샘플링 (원본 프레임 수와 interval 정보 저장)
+    console.log(`[VideoInsertJob] Job ${jobId} - Resampling video to 16 frames...`);
+    const { originalFrameCount, interval } = await VideoInsertService.resampleVideoTo16Frames(originalVideoPath, videoPath);
+    console.log(`[VideoInsertJob] Job ${jobId} - Video resampled successfully (original: ${originalFrameCount} frames, interval: ${interval})`);
     
     // 2. 이미지 다운로드 (10%)
     updateJobStatus(jobId, 'processing', 10);
@@ -223,10 +231,23 @@ async function processVideoInsertionAsync(
     // AnyV2V API 완료 후 진행률 업데이트 (가장 오래 걸리는 단계)
     await updateProjectProgress(projectId, jobId, 'processing', 85);
 
-    // 9. 최종 결과를 GCS에 영구 저장 (90%)
+    // 9. 최종 결과 다운로드 및 원래 프레임 수로 복구 (90%)
     updateJobStatus(jobId, 'processing', 90);
     await updateProjectProgress(projectId, jobId, 'processing', 90);
-    const finalVideoPath = await VideoInsertService.downloadFile(outputVideoUrl, tempDir, 'output.mp4');
+    const resampledOutputPath = await VideoInsertService.downloadFile(outputVideoUrl, tempDir, 'resampled_output.mp4');
+    
+    // 원래 프레임 수로 복구
+    console.log(`[VideoInsertJob] Job ${jobId} - Restoring video to original frame count (${originalFrameCount} frames)...`);
+    const finalVideoPath = path.join(tempDir, 'output.mp4');
+    await VideoInsertService.restoreVideoToOriginalFrames(
+      resampledOutputPath,
+      finalVideoPath,
+      originalFrameCount,
+      interval
+    );
+    console.log(`[VideoInsertJob] Job ${jobId} - Video restored successfully`);
+    
+    // 복구된 비디오를 GCS에 영구 저장
     const finalGcsPath = await VideoInsertService.uploadToGCS(finalVideoPath, 'processed-videos', false);
     // 최종 파일 저장 완료 후 진행률 업데이트
     await updateProjectProgress(projectId, jobId, 'processing', 95);

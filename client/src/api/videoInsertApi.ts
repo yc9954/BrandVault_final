@@ -121,8 +121,9 @@ export interface VideoInsertionStatusResponse {
 export const getVideoInsertionStatus = async (
   jobId: string
 ): Promise<VideoInsertionStatusResponse> => {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
   const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/video-insertion/status/${jobId}`,
+    `${API_BASE_URL}/api/video-insertion/status/${jobId}`,
     {
       method: 'GET',
       credentials: 'include',
@@ -134,6 +135,41 @@ export const getVideoInsertionStatus = async (
       error: '작업 상태 조회에 실패했습니다.',
     }));
     throw new Error(errorData.error || '작업 상태 조회에 실패했습니다.');
+  }
+
+  return response.json();
+};
+
+/**
+ * 비디오를 16프레임으로 리샘플링하여 프리뷰용 URL 반환
+ */
+export interface ResampleVideoResponse {
+  success: boolean;
+  previewUrl: string;
+  error?: string;
+}
+
+export const resampleVideoForPreview = async (
+  videoFile: File
+): Promise<ResampleVideoResponse> => {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  const formData = new FormData();
+  formData.append('video', videoFile);
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/video-insertion/resample`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      error: '비디오 리샘플링에 실패했습니다.',
+    }));
+    throw new Error(errorData.error || '비디오 리샘플링에 실패했습니다.');
   }
 
   return response.json();

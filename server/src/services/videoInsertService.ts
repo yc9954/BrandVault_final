@@ -432,6 +432,200 @@ export async function cleanupGCSFiles(urls: string[]): Promise<void> {
 /**
  * 첫 프레임 추출
  */
+/**
+ * 비디오의 총 프레임 수를 확인
+ */
+async function getVideoFrameCount(videoPath: string): Promise<number> {
+  const ffprobePaths = [
+    '/opt/homebrew/bin/ffprobe',  // Apple Silicon Mac
+    '/usr/local/bin/ffprobe',     // Intel Mac
+    'ffprobe'                      // 시스템 PATH
+  ];
+
+  let ffprobeCmd = 'ffprobe';
+  for (const ffprobePath of ffprobePaths) {
+    try {
+      await fs.access(ffprobePath);
+      ffprobeCmd = ffprobePath;
+      break;
+    } catch {
+      // 다음 경로 시도
+    }
+  }
+
+  try {
+    // 프레임 수 확인
+    const { stdout } = await execPromise(
+      `${ffprobeCmd} -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "${videoPath}"`
+    );
+    const frameCount = parseInt(stdout.trim());
+    return isNaN(frameCount) ? 0 : frameCount;
+  } catch (error) {
+    console.error('Failed to get frame count, trying alternative method:', error);
+    // 대체 방법: fps와 duration으로 계산
+    try {
+      const { stdout: fpsOutput } = await execPromise(
+        `${ffprobeCmd} -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`
+      );
+      const { stdout: durationOutput } = await execPromise(
+        `${ffprobeCmd} -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`
+      );
+      
+      const fpsStr = fpsOutput.trim();
+      const parts = fpsStr.split('/').map(Number);
+      const num = parts[0];
+      const den = parts[1];
+      const fps = (num && den) ? num / den : parseFloat(fpsStr);
+      const duration = parseFloat(durationOutput.trim());
+      
+      return Math.floor(fps * duration);
+    } catch (altError) {
+      console.error('Failed to get frame count with alternative method:', altError);
+      return 0;
+    }
+  }
+}
+
+/**
+ * 비디오를 최대 16프레임으로 리샘플링
+ * 프레임 수가 16보다 많으면 균등 간격으로 16프레임만 추출하여 새 비디오 생성
+ * @returns 원본 프레임 수와 리샘플링 간격 정보
+ */
+export async function resampleVideoTo16Frames(
+  videoPath: string, 
+  outputPath: string
+): Promise<{ originalFrameCount: number; interval: number }> {
+  const ffmpegPaths = [
+    '/opt/homebrew/bin/ffmpeg',  // Apple Silicon Mac
+    '/usr/local/bin/ffmpeg',     // Intel Mac
+    'ffmpeg'                      // 시스템 PATH
+  ];
+
+  let ffmpegCmd = 'ffmpeg';
+  for (const ffmpegPath of ffmpegPaths) {
+    try {
+      await fs.access(ffmpegPath);
+      ffmpegCmd = ffmpegPath;
+      console.log(`Using ffmpeg at: ${ffmpegCmd}`);
+      break;
+    } catch {
+      // 다음 경로 시도
+    }
+  }
+
+  // 1. 총 프레임 수 확인
+  const totalFrames = await getVideoFrameCount(videoPath);
+  console.log(`[ResampleVideo] Total frames: ${totalFrames}`);
+
+  // 2. 프레임 수가 16 이하면 그대로 복사
+  if (totalFrames <= 16) {
+    console.log(`[ResampleVideo] Frame count (${totalFrames}) is already <= 16, copying as is`);
+    await execPromise(`${ffmpegCmd} -i "${videoPath}" -c copy "${outputPath}"`);
+    return { originalFrameCount: totalFrames, interval: 1 };
+  }
+
+  // 3. 16프레임으로 리샘플링
+  // 간격 계산: totalFrames / 16
+  const interval = Math.floor(totalFrames / 16);
+  console.log(`[ResampleVideo] Resampling to 16 frames with interval: ${interval}`);
+
+  // FFmpeg 필터: 특정 프레임만 선택하고 프레임 레이트 조정
+  // select='not(mod(n,${interval}))' : interval 간격으로 프레임 선택
+  // setpts=N/FRAME_RATE/TB : 타임스탬프 재설정
+  // fps=8 : 2초 비디오에 16프레임 = 8fps
+  const filter = `select='not(mod(n,${interval}))',setpts=N/FRAME_RATE/TB,fps=8`;
+  
+  await execPromise(
+    `${ffmpegCmd} -i "${videoPath}" -vf "${filter}" -c:v libx264 -preset fast -crf 23 "${outputPath}"`
+  );
+  
+  console.log(`[ResampleVideo] Video resampled successfully to 16 frames`);
+  
+  return { originalFrameCount: totalFrames, interval };
+}
+
+/**
+ * 리샘플링된 비디오(16프레임)를 원래 프레임 수로 복구
+ * 각 프레임을 interval만큼 복사하여 원래 프레임 수로 재구성
+ */
+export async function restoreVideoToOriginalFrames(
+  resampledVideoPath: string,
+  outputPath: string,
+  originalFrameCount: number,
+  interval: number
+): Promise<void> {
+  const ffmpegPaths = [
+    '/opt/homebrew/bin/ffmpeg',  // Apple Silicon Mac
+    '/usr/local/bin/ffmpeg',     // Intel Mac
+    'ffmpeg'                      // 시스템 PATH
+  ];
+
+  let ffmpegCmd = 'ffmpeg';
+  for (const ffmpegPath of ffmpegPaths) {
+    try {
+      await fs.access(ffmpegPath);
+      ffmpegCmd = ffmpegPath;
+      console.log(`Using ffmpeg at: ${ffmpegCmd}`);
+      break;
+    } catch {
+      // 다음 경로 시도
+    }
+  }
+
+  // 프레임 수가 16 이하면 그대로 복사
+  if (originalFrameCount <= 16 || interval === 1) {
+    console.log(`[RestoreVideo] Frame count (${originalFrameCount}) is already <= 16 or interval is 1, copying as is`);
+    await execPromise(`${ffmpegCmd} -i "${resampledVideoPath}" -c copy "${outputPath}"`);
+    return;
+  }
+
+  console.log(`[RestoreVideo] Restoring video from 16 frames to ${originalFrameCount} frames with interval: ${interval}`);
+
+  // 원본 비디오의 fps 확인
+  const ffprobePaths = [
+    '/opt/homebrew/bin/ffprobe',
+    '/usr/local/bin/ffprobe',
+    'ffprobe'
+  ];
+
+  let ffprobeCmd = 'ffprobe';
+  for (const ffprobePath of ffprobePaths) {
+    try {
+      await fs.access(ffprobePath);
+      ffprobeCmd = ffprobePath;
+      break;
+    } catch {
+      // 다음 경로 시도
+    }
+  }
+
+  // 원본 fps 계산 (원본 프레임 수 / duration)
+  let originalFps = 30; // 기본값
+  try {
+    const { stdout: durationOutput } = await execPromise(
+      `${ffprobeCmd} -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${resampledVideoPath}"`
+    );
+    const duration = parseFloat(durationOutput.trim());
+    if (duration > 0) {
+      originalFps = originalFrameCount / duration;
+      console.log(`[RestoreVideo] Calculated original FPS: ${originalFps}`);
+    }
+  } catch (error) {
+    console.warn(`[RestoreVideo] Failed to get duration, using default FPS: ${originalFps}`, error);
+  }
+
+  // FFmpeg 필터: 각 프레임을 interval만큼 복사하여 원래 프레임 수로 복구
+  // minterpolate의 dup 모드를 사용하여 각 프레임을 복사
+  // fps를 원래 fps로 설정하면 자동으로 프레임이 복사됨
+  const restoreFilter = `minterpolate=fps=${originalFps}:mi_mode=dup`;
+  
+  await execPromise(
+    `${ffmpegCmd} -i "${resampledVideoPath}" -vf "${restoreFilter}" -c:v libx264 -preset fast -crf 23 "${outputPath}"`
+  );
+  
+  console.log(`[RestoreVideo] Video restored successfully to ${originalFrameCount} frames`);
+}
+
 export async function extractFirstFrame(videoPath: string, outputPath: string): Promise<void> {
   // ffmpeg 경로 찾기 (Homebrew 경로 우선)
   const ffmpegPaths = [

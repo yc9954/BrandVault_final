@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { processVideoInsertion } from '../controllers/videoInsertController.js';
+import { processVideoInsertion, resampleVideoForPreview } from '../controllers/videoInsertController.js';
 import { startVideoInsertion, getVideoInsertionStatus } from '../controllers/videoInsertJobController.js';
 
 const router = Router();
@@ -47,6 +47,20 @@ router.post(
 router.get(
   '/status/:jobId',
   getVideoInsertionStatus
+);
+
+/**
+ * @swagger
+ * /api/video-insertion/resample:
+ *   post:
+ *     summary: Resample video to 16 frames for preview
+ *     description: Resamples a video to maximum 16 frames and returns a signed URL for preview
+ *     tags: [Video Insertion]
+ */
+router.post(
+  '/resample',
+  upload.single('video'),
+  resampleVideoForPreview
 );
 
 export default router;

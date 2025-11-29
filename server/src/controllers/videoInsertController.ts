@@ -41,11 +41,18 @@ export const processVideoInsertion = async (req: Request, res: Response) => {
 
     console.log('Processing video insertion...');
 
-    // 1. 임시 파일 저장
+    // 1. 임시 파일 저장 및 비디오 리샘플링
+    const originalVideoPath = path.join(tempDir, 'original_input.mp4');
     const videoPath = path.join(tempDir, 'input.mp4');
     const objectImagePath = path.join(tempDir, 'object.png');
 
-    await fs.writeFile(videoPath, videoFile.buffer);
+    // 원본 비디오 저장
+    await fs.writeFile(originalVideoPath, videoFile.buffer);
+    
+    // 비디오를 16프레임으로 리샘플링
+    console.log('Resampling video to 16 frames...');
+    await VideoInsertService.resampleVideoTo16Frames(originalVideoPath, videoPath);
+    console.log('Video resampled successfully');
     
     // 2. 이미지 URL에서 이미지 다운로드
     console.log('Downloading object image from URL:', objectImageUrl);
@@ -136,6 +143,72 @@ export const processVideoInsertion = async (req: Request, res: Response) => {
     }
 
     const errorMessage = error instanceof Error ? error.message : '비디오 처리 중 오류가 발생했습니다.';
+    console.error('Sending error response:', errorMessage);
+    
+    res.status(500).json({
+      success: false,
+      error: errorMessage,
+    });
+  }
+};
+
+/**
+ * [POST] /api/video-insertion/resample
+ * 비디오를 16프레임으로 리샘플링하고 프리뷰용 URL 반환
+ */
+export const resampleVideoForPreview = async (req: Request, res: Response) => {
+  const tempDir = path.join(process.cwd(), 'temp', uuidv4());
+
+  try {
+    // 임시 디렉토리 생성
+    await fs.mkdir(tempDir, { recursive: true });
+
+    const videoFile = req.file;
+
+    if (!videoFile) {
+      return res.status(400).json({
+        success: false,
+        error: '비디오 파일이 필요합니다.'
+      });
+    }
+
+    console.log('Resampling video for preview...');
+
+    // 1. 임시 파일 저장
+    const originalVideoPath = path.join(tempDir, 'original_input.mp4');
+    const resampledVideoPath = path.join(tempDir, 'resampled.mp4');
+
+    await fs.writeFile(originalVideoPath, videoFile.buffer);
+    
+    // 2. 비디오를 16프레임으로 리샘플링
+    await VideoInsertService.resampleVideoTo16Frames(originalVideoPath, resampledVideoPath);
+    console.log('Video resampled successfully');
+
+    // 3. 리샘플링된 비디오를 GCS에 업로드하고 서명된 URL 반환
+    const signedUrl = await VideoInsertService.uploadToGCS(resampledVideoPath, 'temp', true);
+
+    // 임시 파일 정리
+    await VideoInsertService.cleanupTempFiles(tempDir);
+
+    console.log('Preview video ready');
+
+    res.json({
+      success: true,
+      previewUrl: signedUrl,
+    });
+
+  } catch (error) {
+    console.error('Video resampling error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+    // 에러 발생 시 임시 파일 정리
+    try {
+      await VideoInsertService.cleanupTempFiles(tempDir);
+    } catch (cleanupError) {
+      console.error('Cleanup error:', cleanupError);
+    }
+
+    const errorMessage = error instanceof Error ? error.message : '비디오 리샘플링 중 오류가 발생했습니다.';
     console.error('Sending error response:', errorMessage);
     
     res.status(500).json({

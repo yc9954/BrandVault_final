@@ -139,7 +139,7 @@ function HomePage() {
         </h1>
 
         <p className={styles.subtitle}>
-          쇼트폼 영상에 광고를 연결해 수익을 만들어보세요.
+          숏폼 영상에 광고를 연결해 수익을 만들어보세요.
         </p>
 
         <div className={styles.loginSection}>
