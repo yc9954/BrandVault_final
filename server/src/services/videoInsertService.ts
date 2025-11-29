@@ -13,6 +13,20 @@ const execPromise = promisify(exec);
 const storage = new Storage();
 const bucketName = process.env.GCS_BUCKET_NAME || 'brandvault-bucket';
 
+// Replicate API 설정
+const REPLICATE_API_BASE_URL = process.env.REPLICATE_API_BASE_URL || 'https://api.replicate.com/v1';
+const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
+
+// AI 모델 설정
+const REPLICATE_MODELS = {
+  SAM2: process.env.REPLICATE_MODEL_SAM2 || 'meta/sam-2:fe97b453a6455861e3bac769b441ca1f1086110da7466dbb65cf1eecfd60dc83',
+  ANYDOOR: process.env.REPLICATE_MODEL_ANYDOOR || 'ali-vilab/anydoor:542c963129c4661ab53a875b1b9a84b2102ca784cf872ef2752a468721c0eb2a',
+  ANYV2V: process.env.REPLICATE_MODEL_ANYV2V || 'tiger-ai-lab/anyv2v:3c7b5bc5bcae13a0c945e6f918bb8409f76cc46102c7c9a208bd1531f82c5684',
+};
+
+// GCS 설정
+const GCS_BASE_URL = process.env.GCS_BASE_URL || 'https://storage.googleapis.com';
+
 /**
  * GCS에 파일 업로드하고 서명된 URL 반환 (비공개 버킷용, Replicate API용)
  * Replicate API가 접근할 수 있도록 충분히 긴 만료 시간(1시간)을 설정합니다.
@@ -77,9 +91,9 @@ async function checkModelExists(modelName: string): Promise<boolean> {
     // 버전 해시가 포함된 경우 모델 경로만 추출
     const modelPath = modelName.includes(':') ? modelName.split(':')[0] : modelName;
     
-    const response = await fetch(`https://api.replicate.com/v1/models/${modelPath}`, {
+    const response = await fetch(`${REPLICATE_API_BASE_URL}/models/${modelPath}`, {
       headers: {
-        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+        'Authorization': `Token ${REPLICATE_API_TOKEN}`,
       }
     });
     
@@ -112,16 +126,16 @@ async function callReplicateModel(modelName: string, input: any): Promise<any> {
   if (modelName.includes(':')) {
     // 버전 해시가 포함된 경우: model_owner/model_name:version_hash
     const [modelPath, versionHash] = modelName.split(':');
-    apiUrl = `https://api.replicate.com/v1/models/${modelPath}/versions/${versionHash}/predictions`;
+    apiUrl = `${REPLICATE_API_BASE_URL}/models/${modelPath}/versions/${versionHash}/predictions`;
   } else {
     // 버전 해시가 없는 경우: 기본 최신 버전 사용
-    apiUrl = `https://api.replicate.com/v1/models/${modelName}/predictions`;
+    apiUrl = `${REPLICATE_API_BASE_URL}/models/${modelName}/predictions`;
   }
 
   const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
-      'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+      'Authorization': `Token ${REPLICATE_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ input })
@@ -158,9 +172,9 @@ async function callReplicateModel(modelName: string, input: any): Promise<any> {
       console.log(`Still processing ${modelName}... (${elapsed}s elapsed, status: ${prediction.status})`);
     }
     
-    const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+    const statusResponse = await fetch(`${REPLICATE_API_BASE_URL}/predictions/${prediction.id}`, {
       headers: {
-        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+        'Authorization': `Token ${REPLICATE_API_TOKEN}`,
       }
     });
     
@@ -198,7 +212,7 @@ async function callReplicateModel(modelName: string, input: any): Promise<any> {
 export async function generateMaskWithSAM2(imageUrl: string, points: number[][]): Promise<string> {
   try {
     // meta/sam-2는 point_coords를 직접 지원하지 않으므로 자동 세그멘테이션 사용
-    const output = await callReplicateModel("meta/sam-2:fe97b453a6455861e3bac769b441ca1f1086110da7466dbb65cf1eecfd60dc83", {
+    const output = await callReplicateModel(REPLICATE_MODELS.SAM2, {
       image: imageUrl,
       points_per_side: 32,
       pred_iou_thresh: 0.88,
@@ -323,7 +337,7 @@ export async function editFrameWithAnydoor(params: {
   targetMask: string;
 }): Promise<string> {
   try {
-    const output = await callReplicateModel("ali-vilab/anydoor:542c963129c4661ab53a875b1b9a84b2102ca784cf872ef2752a468721c0eb2a", {
+    const output = await callReplicateModel(REPLICATE_MODELS.ANYDOOR, {
       reference_image_path: params.referenceImage,
       reference_image_mask: params.referenceMask,
       bg_image_path: params.targetImage,
@@ -348,7 +362,7 @@ export async function generateVideoWithAnyV2V(params: {
   editedFirstFrame: string;
 }): Promise<string> {
   try {
-    const output = await callReplicateModel("tiger-ai-lab/anyv2v:3c7b5bc5bcae13a0c945e6f918bb8409f76cc46102c7c9a208bd1531f82c5684", {
+    const output = await callReplicateModel(REPLICATE_MODELS.ANYV2V, {
       video: params.video,
       edited_first_frame: params.editedFirstFrame,
       num_inference_steps: 100,  // 화질 개선: 50 -> 100
@@ -399,7 +413,7 @@ export async function cleanupGCSFiles(urls: string[]): Promise<void> {
       
       // 추출 실패 시 일반 URL 형식으로 시도
       if (!fileName) {
-        const extracted = url.replace(`https://storage.googleapis.com/${bucketName}/`, '').split('?')[0];
+        const extracted = url.replace(`${GCS_BASE_URL}/${bucketName}/`, '').split('?')[0];
         fileName = extracted || null;
       }
       

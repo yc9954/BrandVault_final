@@ -82,3 +82,71 @@ export const createProject = async (
     });
     return project;
 }
+
+export const getProjectById = async (projectId: number, userId: number) => {
+    const project = await prisma.project.findFirst({
+        where: {
+            project_id: projectId,
+            creator_id: userId, // 본인의 프로젝트만 조회 가능
+        },
+        include: {
+            creator: {
+                select: {
+                    user_name: true,
+                }
+            },
+            products_used: {
+                select: {
+                    product_id: true,
+                    product_name: true,
+                    image_url: true,
+                    category: true,
+                    brand: {
+                        select: {
+                            brand_id: true,
+                            brand_name: true,
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!project) {
+        throw new Error('Project not found');
+    }
+
+    // 비디오 URL 생성
+    let videoUrl = null;
+    if (project.thumbnail_url) {
+        try {
+            videoUrl = await getSignedUrl(project.thumbnail_url);
+        } catch (error) {
+            console.error(`비디오 URL 생성 실패 (Project ID: ${project.project_id}):`, error);
+        }
+    }
+
+    // 각 에셋의 Signed URL 생성
+    const productsWithUrls = await Promise.all(
+        project.products_used.map(async (product) => {
+            let signedImageUrl = null;
+            if (product.image_url) {
+                try {
+                    signedImageUrl = await getSignedUrl(product.image_url);
+                } catch (error) {
+                    console.error(`Signed URL 생성 실패 (Product ID: ${product.product_id}):`, error);
+                }
+            }
+            return {
+                ...product,
+                signedImageUrl,
+            };
+        })
+    );
+
+    return {
+        ...project,
+        videoUrl,
+        products_used: productsWithUrls,
+    };
+}

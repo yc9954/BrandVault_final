@@ -134,6 +134,12 @@
     margin-left: 0; /* 좌우 마진 제거 (메인 컨테이너에서 처리) */
 }
 
+.projectCardLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
 .projectCard {
     background-color: #fff;
     border: 1px solid #e0e0e0;

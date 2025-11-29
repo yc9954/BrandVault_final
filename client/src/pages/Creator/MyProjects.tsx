@@ -141,6 +141,7 @@ function ProjectCard({ project }: { project: Project }) {
     });
 
     return (
+        <Link to={`/creator/project/${project.project_id}`} className={styles.projectCardLink}>
         <div className={styles.projectCard}>
             <div className={styles.thumbnail}>
                 {thumbnailUrl ? (
@@ -217,6 +218,7 @@ function ProjectCard({ project }: { project: Project }) {
                 )}
             </div>
         </div>
+        </Link>
     );
 }
 

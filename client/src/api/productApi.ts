@@ -300,3 +300,43 @@ export const fetchUserProjects = async (): Promise<UserProject[]> => {
 
     return response.json();
 };
+
+/**
+ * 프로젝트 상세 정보 조회
+ */
+export interface ProjectDetail {
+    project_id: number;
+    project_name: string;
+    description?: string;
+    created_at: string;
+    thumbnail_url?: string;
+    videoUrl?: string | null;
+    products_used: Array<{
+        product_id: number;
+        product_name: string;
+        image_url: string;
+        category: string;
+        signedImageUrl: string | null;
+        brand: {
+            brand_id: number;
+            brand_name: string;
+        };
+    }>;
+}
+
+export interface ProjectDetailResponse {
+    data: ProjectDetail;
+}
+
+export const fetchProjectById = async (projectId: number): Promise<ProjectDetailResponse> => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects/${projectId}`, {
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: '프로젝트를 불러오는데 실패했습니다.' }));
+        throw new Error(errorData.message || '프로젝트를 불러오는데 실패했습니다.');
+    }
+
+    return response.json();
+};

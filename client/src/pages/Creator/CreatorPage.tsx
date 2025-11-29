@@ -13,6 +13,7 @@ import Profile from './Profile'; // 💡 프로필 페이지 컴포넌트 임포
 import ProductDetail from './ProductDetail'; // 💡 상세 페이지 컴포넌트 임포트
 import BrandPage from './BrandPage'; // 💡 브랜드 페이지 컴포넌트 임포트
 import CreateProject from './CreateProject'; // 💡 프로젝트 생성 페이지 컴포넌트 임포트
+import ProjectDetail from './ProjectDetail'; // 💡 프로젝트 상세 페이지 컴포넌트 임포트
 
 function CreatorPage() {
     return (
@@ -39,6 +40,8 @@ function CreatorPage() {
                 
                 {/* path="project/create"는 /creator/project/create 경로와 일치합니다. */}
                 <Route path="project/create" element={<CreateProject />} />
+                {/* path="project/:id"는 /creator/project/:id 경로와 일치합니다. */}
+                <Route path="project/:id" element={<ProjectDetail />} />
             </Routes>
         </Layout>
     );

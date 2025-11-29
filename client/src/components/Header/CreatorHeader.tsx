@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom'; // 💡 NavLink와 Link를 임포트합니다.
+import { NavLink, Link, useLocation } from 'react-router-dom'; // 💡 NavLink와 Link를 임포트합니다.
 import logo from '../../logo.png'; 
 import styles from './CreatorHeader.module.css';
 import type { ContentName } from '../../types';
@@ -37,19 +37,29 @@ const iconMap: Record<ContentName, React.ReactNode> = {
 
 // 💡 props (onSelect, currentContent) 제거
 function CreatorHeader() {
+    const location = useLocation();
     
     // 💡 NavLink를 렌더링하도록 함수 수정
-    const renderNavButton = (name: ContentName, text: string, path: string, isEnd: boolean = false) => {
+    const renderNavButton = (name: ContentName, text: string, path: string, isEnd: boolean = false, matchPattern?: string) => {
         
         // NavLink가 {isActive}를 제공하므로, className을 함수로 전달
         const getButtonClass = ({ isActive }: { isActive: boolean }) => {
-            return `${styles.navButton} ${isActive ? styles.active : ''}`;
+            // 프로젝트 상세 페이지도 활성화
+            let isActiveState = isActive;
+            if (matchPattern && location.pathname.startsWith(matchPattern)) {
+                isActiveState = true;
+            }
+            return `${styles.navButton} ${isActiveState ? styles.active : ''}`;
         };
 
         return (
             <li key={name}>
                 {/* 💡 button을 NavLink로 변경, onClick 제거, to/end prop 추가 */}
-                <NavLink to={path} className={getButtonClass} end={isEnd}>
+                <NavLink 
+                    to={path} 
+                    className={getButtonClass}
+                    end={isEnd}
+                >
                     <span className={styles.navIcon}>{iconMap[name]}</span>
                     {text}
                 </NavLink>
@@ -73,7 +83,7 @@ function CreatorHeader() {
                          index route(탐색)에 end={true}를 추가합니다.
                     */}
                     {renderNavButton('product', '탐색', '/creator', true)}
-                    {renderNavButton('projects', '내 프로젝트', '/creator/projects')}
+                    {renderNavButton('projects', '내 프로젝트', '/creator/projects', false, '/creator/project')}
                     {renderNavButton('dashboard', '대시보드', '/creator/dashboard')}
                     {renderNavButton('earnings', '수익', '/creator/earnings')}
                     {renderNavButton('settings', '설정', '/creator/settings')}

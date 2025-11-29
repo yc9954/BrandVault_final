@@ -30,5 +30,6 @@ const router = Router();
  */
 router.get('/', authenticateToken, projectController.handleGetUserProjects)
 router.post('/', authenticateToken, projectController.handleCreateProject)
+router.get('/:id', authenticateToken, projectController.handleGetProjectById)
 
 export default router;

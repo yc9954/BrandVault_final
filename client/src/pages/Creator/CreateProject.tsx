@@ -90,19 +90,7 @@ function CreateProject() {
     
     // 선택하려는 경우 이미지 형식인지 체크
     if (product && !selectedProducts.includes(productId)) {
-      // 확장자명 추출 및 로그 출력
-      if (product.signedImageUrl) {
-        const url = product.signedImageUrl.toLowerCase();
-        const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
-        const foundExtension = imageExtensions.find(ext => url.includes(ext));
-        console.log('에셋 선택 - 확장자명:', foundExtension || '확장자 없음', 'URL:', product.signedImageUrl);
-      } else {
-        console.log('에셋 선택 - signedImageUrl 없음:', product.productName);
-      }
-      
       const isImageFormat = checkIfImageFormat(product);
-      console.log('이미지 형식 여부:', isImageFormat, '에셋명:', product.productName);
-      
       if (!isImageFormat) {
         setErrorMessage(`"${product.productName}"은(는) 이미지 형식이 아닙니다. 비디오에 삽입하려면 이미지 형식의 에셋을 선택해주세요.`);
         setShowErrorModal(true);
